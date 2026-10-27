@@ -125,20 +125,22 @@ main {
   padding-top: 10px;
 }
 
+/* Tiles take the room the header and keyboard leave, capped by screen width. */
 .board {
+  --tile: clamp(34px, min(20vw, calc((100dvh - 360px) / 6.5)), 76px);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   align-items: center;
 }
 
+/* Tiles stay centred on screen; a word from a guessed root sits in the side column. */
 .board-row {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  max-width: 340px;
 }
 
 .tiles {
@@ -147,14 +149,14 @@ main {
 }
 
 .tile {
-  width: clamp(36px, 5.8dvh, 54px);
-  height: clamp(36px, 5.8dvh, 54px);
+  width: var(--tile);
+  height: var(--tile);
   display: grid;
   place-items: center;
   border: 2px solid var(--border);
   border-radius: 8px;
   font-family: var(--font-ar);
-  font-size: 1.9rem;
+  font-size: calc(var(--tile) * 0.55);
   line-height: 1;
   font-weight: 700;
   background: var(--surface);
@@ -184,8 +186,7 @@ main {
 }
 
 .tile.mini {
-  width: 32px;
-  height: 32px;
+  --tile: 32px;
   font-size: 1.1rem;
   display: inline-grid;
   vertical-align: middle;
@@ -194,6 +195,7 @@ main {
 }
 
 .row-word {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   line-height: 1.2;
@@ -230,7 +232,7 @@ main {
 .key {
   flex: 1;
   max-width: 52px;
-  height: clamp(36px, 5.6dvh, 54px);
+  height: clamp(36px, 6dvh, 54px);
   border: none;
   border-radius: 8px;
   background: var(--key);
