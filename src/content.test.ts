@@ -13,7 +13,6 @@ describe('content', () => {
     day.root.forEach((l) => expect(letters.has(l)).toBe(true))
     expect(day.words.length).toBeGreaterThanOrEqual(8)
     expect(day.words.length).toBeLessThanOrEqual(12)
-    expect(day.hebrewCousin || day.hint).toBeTruthy()
     for (const w of day.words) {
       expect(w.ar && w.he && w.translit).toBeTruthy()
       expect(['msa', 'pal', 'both']).toContain(w.register)

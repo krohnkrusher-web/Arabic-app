@@ -5,7 +5,6 @@ import { Keyboard } from './components/Keyboard'
 import { Reveal } from './components/Reveal'
 import { days, normalizeLetter } from './content'
 import {
-  HINT_AFTER_MISSES,
   MAX_GUESSES,
   ROOT_LENGTH,
   contentIndexFor,
@@ -36,7 +35,6 @@ export default function App() {
 
   const { guesses, status } = progress
   const finished = status !== 'playing'
-  const misses = guesses.length
   const marks = useMemo(() => keyboardMarks(guesses, day.root), [guesses, day.root])
 
   useEffect(() => saveProgress(progress), [progress])
@@ -101,8 +99,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [submit, removeLetter, addLetter, helpOpen])
 
-  const showHint = !finished && misses >= HINT_AFTER_MISSES && (day.hebrewCousin || day.hint)
-
   return (
     <div className="app">
       <header className="top">
@@ -119,21 +115,8 @@ export default function App() {
 
       <main>
         <div className="clue">
-          <div>
-            <span className="clue-label">הגדרה</span>
-            {day.clue}
-          </div>
-          {showHint && (
-            <div className="hint">
-              {day.hebrewCousin ? (
-                <>
-                  לשורש הזה יש בן דוד בעברית: <strong>{day.hebrewCousin}</strong>
-                </>
-              ) : (
-                day.hint
-              )}
-            </div>
-          )}
+          <span className="clue-label">הגדרה</span>
+          {day.clue}
         </div>
 
         <Board guesses={guesses} current={current} answer={day.root} shake={shake} />

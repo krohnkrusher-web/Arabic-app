@@ -18,7 +18,6 @@ export interface Day {
   meaning: string
   clue: string
   hebrewCousin: string | null
-  hint: string | null
   funFact?: string
   words: FamilyWord[]
 }

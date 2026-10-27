@@ -10,7 +10,7 @@
   --absent: #8d867d;
   --key: #ece4d6;
   --key-text: #2a2622;
-  --hint-bg: #fff3d6;
+  --note-bg: #fff3d6;
   --tag-msa: #dbe7f5;
   --tag-pal: #f7dfd3;
   --tag-both: #e3eedb;
@@ -32,7 +32,7 @@
     --absent: #4d4740;
     --key: #3a342e;
     --key-text: #f2ece3;
-    --hint-bg: #3d3420;
+    --note-bg: #3d3420;
     --tag-msa: #2c3a4c;
     --tag-pal: #4c3328;
     --tag-both: #33412b;
@@ -140,15 +140,6 @@ main {
   font-weight: 700;
   color: var(--accent);
   margin-inline-end: 8px;
-}
-
-.hint {
-  background: var(--hint-bg);
-  border-radius: 8px;
-  padding: 6px 10px;
-  margin-top: 6px;
-  line-height: 1.4;
-  animation: pop 300ms ease-out;
 }
 
 .board {
@@ -477,7 +468,7 @@ main {
 }
 
 .fun-fact {
-  background: var(--hint-bg);
+  background: var(--note-bg);
   border-radius: 12px;
   padding: 10px 12px;
   line-height: 1.5;

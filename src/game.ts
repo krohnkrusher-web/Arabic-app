@@ -1,6 +1,5 @@
 export const ROOT_LENGTH = 3
 export const MAX_GUESSES = 6
-export const HINT_AFTER_MISSES = 3
 
 // Day 1 of the puzzle. Every local calendar day after it is the next day.
 export const START_DATE = { year: 2026, month: 10, day: 28 }

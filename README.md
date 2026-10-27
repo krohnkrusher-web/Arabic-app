@@ -19,7 +19,7 @@ Pushing to `main` builds and deploys to GitHub Pages (turn it on once under Sett
 
 Content lives in `content/he-ar/` (Hebrew speakers learning Arabic; a later Arabic-to-Hebrew edition gets its own folder).
 
-- `days/NN.json` is one day: the root, a Hebrew clue, the Hebrew cousin root (or a hint when there is none), an optional fun fact, and 8 to 12 family words. Each word has the Arabic with vowel marks, its Hebrew meaning, a Hebrew-letter transliteration, and a register: `msa`, `pal` or `both`. `audio` can point to a recorded file once recordings exist; until then the phone's Arabic voice reads the word.
+- `days/NN.json` is one day: the root, a Hebrew clue, the Hebrew cousin root shown in the reveal (or null), an optional fun fact, and 8 to 12 family words. Each word has the Arabic with vowel marks, its Hebrew meaning, a Hebrew-letter transliteration, and a register: `msa`, `pal` or `both`. `audio` can point to a recorded file once recordings exist; until then the phone's Arabic voice reads the word.
 - `roots.json` is the list of real roots the puzzle recognises. A wrong guess that is a real root shows one word from it.
 
 Days are played in file order, one per calendar day from 28 October 2026, and loop when they run out. `npm test` checks every day file.
