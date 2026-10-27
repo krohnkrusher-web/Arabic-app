@@ -19,6 +19,7 @@ export function Board({ guesses, current, answer, shake }: Props) {
     const known = done && marks!.some((m) => m !== 'correct') ? lookupRoot(guesses[r]) : undefined
     rows.push(
       <div className="board-row" key={r}>
+        <div />
         <div className={`tiles ${isCurrent && shake ? 'shake' : ''}`}>
           {Array.from({ length: ROOT_LENGTH }, (_, i) => (
             <div
