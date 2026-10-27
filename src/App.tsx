@@ -114,11 +114,6 @@ export default function App() {
       </header>
 
       <main>
-        <div className="clue">
-          <span className="clue-label">הגדרה</span>
-          {day.clue}
-        </div>
-
         <Board guesses={guesses} current={current} answer={day.root} shake={shake} />
 
         {!finished && (

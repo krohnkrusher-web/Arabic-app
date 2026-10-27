@@ -8,7 +8,7 @@ export function Help({ onClose }: Props) {
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <h2>איך משחקים</h2>
         <p>
-          כל יום יש שורש ערבי אחד של שלוש אותיות. יש לך שישה ניסיונות לנחש אותו. ההגדרה בעברית מופיעה למעלה.
+          כל יום יש שורש ערבי אחד של שלוש אותיות. יש לך שישה ניסיונות לנחש אותו.
         </p>
         <ul className="help-list">
           <li>

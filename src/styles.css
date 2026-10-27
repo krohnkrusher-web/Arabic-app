@@ -125,23 +125,6 @@ main {
   padding-top: 10px;
 }
 
-.clue {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
-  font-size: 1rem;
-  line-height: 1.4;
-}
-
-.clue-label {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent);
-  margin-inline-end: 8px;
-}
-
 .board {
   display: flex;
   flex-direction: column;
