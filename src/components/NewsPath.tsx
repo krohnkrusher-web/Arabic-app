@@ -1,13 +1,14 @@
 import { Fragment, useEffect, useState } from 'react'
 import { stripVowels, type News } from '../content'
 import { loadNews, saveNews } from '../storage'
-import { scoreSentence, totalScore } from '../translate'
+import { newsScore, scoreSentence, totalScore } from '../translate'
 import { speak, useArabicVoice } from '../voice'
 
 interface Props {
   news: News
   dayNumber: number
-  onClose: () => void
+  save: boolean
+  onClose: (score: number | null) => void
 }
 
 const plain = (text: string) => text.replace(/\*/g, '')
@@ -24,9 +25,9 @@ function Marked({ text }: { text: string }) {
   )
 }
 
-export function NewsPath({ news, dayNumber, onClose }: Props) {
+export function NewsPath({ news, dayNumber, save, onClose }: Props) {
   const voice = useArabicVoice()
-  const [progress, setProgress] = useState(() => loadNews(dayNumber))
+  const [progress, setProgress] = useState(() => (save ? loadNews(dayNumber) : { dayNumber, answers: [], checked: 0 }))
   const total = news.sentences.length
   const done = progress.checked >= total
   const [stage, setStage] = useState<'read' | 'translate' | 'summary'>(() =>
@@ -34,7 +35,9 @@ export function NewsPath({ news, dayNumber, onClose }: Props) {
   )
   const [index, setIndex] = useState(() => Math.min(progress.checked, total - 1))
 
-  useEffect(() => saveNews(progress), [progress])
+  useEffect(() => {
+    if (save) saveNews(progress)
+  }, [progress, save])
 
   const sentence = news.sentences[index]
   const answer = progress.answers[index] ?? ''
@@ -56,6 +59,8 @@ export function NewsPath({ news, dayNumber, onClose }: Props) {
     else setStage('summary')
   }
 
+  const close = () => onClose(newsScore(news, progress))
+
   const source = (
     <p className="news-source">
       על פי{' '}
@@ -71,7 +76,7 @@ export function NewsPath({ news, dayNumber, onClose }: Props) {
       <div className="sheet news">
         <div className="news-top">
           <h2>מסלול כתוב</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="סגירה">
+          <button className="icon-btn" onClick={close} aria-label="סגירה">
             ✕
           </button>
         </div>
@@ -174,7 +179,7 @@ export function NewsPath({ news, dayNumber, onClose }: Props) {
               ))}
             </ol>
             {source}
-            <button className="primary" onClick={onClose}>
+            <button className="primary" onClick={close}>
               סיום
             </button>
           </>

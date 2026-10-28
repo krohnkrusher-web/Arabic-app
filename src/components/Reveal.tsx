@@ -21,6 +21,9 @@ interface Props {
   stats: Stats
   showVowels: boolean
   onToggleVowels: () => void
+  showCountdown: boolean
+  // Test mode plays the written path without saving it.
+  saveNewsProgress: boolean
 }
 
 function secondsToMidnight() {
@@ -43,11 +46,13 @@ function Countdown() {
   )
 }
 
-export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels }: Props) {
+export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels, showCountdown, saveNewsProgress }: Props) {
   const voice = useArabicVoice()
   const [shared, setShared] = useState(false)
   const [newsOpen, setNewsOpen] = useState(false)
-  const [newsResult, setNewsResult] = useState(() => (day.news ? newsScore(day.news, loadNews(dayNumber)) : null))
+  const [newsResult, setNewsResult] = useState(() =>
+    day.news && saveNewsProgress ? newsScore(day.news, loadNews(dayNumber)) : null,
+  )
   const ar = (text: string) => (showVowels ? text : stripVowels(text))
 
   const play = (text: string, audio?: string) => {
@@ -155,16 +160,19 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
         <NewsPath
           news={day.news}
           dayNumber={dayNumber}
-          onClose={() => {
+          save={saveNewsProgress}
+          onClose={(score) => {
             setNewsOpen(false)
-            setNewsResult(newsScore(day.news!, loadNews(dayNumber)))
+            setNewsResult(score)
           }}
         />
       )}
 
-      <p className="next">
-        השורש הבא בעוד <Countdown />
-      </p>
+      {showCountdown && (
+        <p className="next">
+          השורש הבא בעוד <Countdown />
+        </p>
+      )}
     </section>
   )
 }

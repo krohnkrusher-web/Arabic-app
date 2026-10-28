@@ -1,8 +1,15 @@
 export const ROOT_LENGTH = 3
 export const MAX_GUESSES = 6
 
-// Day 1 of the puzzle. Every local calendar day after it is the next day.
-export const START_DATE = { year: 2026, month: 10, day: 28 }
+export interface CalendarDate {
+  year: number
+  month: number
+  day: number
+}
+
+// The one setting for launch: the date the public link shows day 1, e.g. { year: 2026, month: 11, day: 1 }.
+// Every local calendar day after it is the next day. While it is null the public link stays on day 1.
+export const LAUNCH_DATE: CalendarDate | null = null
 
 export type Mark = 'correct' | 'present' | 'absent'
 
@@ -25,10 +32,11 @@ export function scoreGuess(guess: string[], answer: string[]): Mark[] {
   return marks
 }
 
-// 1 on START_DATE, counted in the player's local calendar so the puzzle changes at their midnight.
-export function dayNumberFor(date: Date): number {
+// 1 on the launch date, counted in the player's local calendar so the puzzle changes at their midnight.
+export function dayNumberFor(date: Date, launch: CalendarDate | null = LAUNCH_DATE): number {
+  if (!launch) return 1
   const today = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  const start = Date.UTC(START_DATE.year, START_DATE.month - 1, START_DATE.day)
+  const start = Date.UTC(launch.year, launch.month - 1, launch.day)
   return Math.max(1, Math.floor((today - start) / 86_400_000) + 1)
 }
 

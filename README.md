@@ -23,6 +23,10 @@ Content lives in `content/he-ar/` (Hebrew speakers learning Arabic; a later Arab
 - `news` (optional, in a day file) is the written path: a short news paragraph that uses the day's root, reworded from a real article (Makan first, then Al Arabiya, then Asharq Al-Awsat; non-political) at the newspaper's own level and without vowel marks. Words from the root are wrapped in `*stars*` to highlight them. Each sentence has a model Hebrew translation and `keys`: the meaning parts a translation must contain, each a list of accepted Hebrew spellings. The phone scores a typed translation by how many keys it finds (Hebrew prefixes like ו, ה, ב, ל are allowed), and `npm test` checks that every model translation passes its own keys.
 - `roots.json` is the list of real roots the puzzle recognises. A wrong guess that is a real root shows one word from it.
 
-Days are played in file order, one per calendar day from 28 October 2026, and loop when they run out. `npm test` checks every day file.
+Days are played in file order, one per calendar day from the launch date, and loop when they run out. The launch date is `LAUNCH_DATE` in `src/game.ts`; while it is `null` the public link stays on day 1. `npm test` checks every day file.
+
+## Test mode
+
+Add `?test` to the link (for example `https://krohnkrusher-web.github.io/Arabic-app/?test`) to play any day: a bar under the header picks the day, and `?test&day=12` opens day 12 directly. Test mode never saves progress or touches the streak and stats.
 
 Transliteration follows the Israeli school convention: ج = ג׳, خ = ח׳, ذ = ד׳, ث = ת׳, ض = צ׳, ظ = ט׳, غ = ע׳. Hamza is a single key (ء) whatever its seat.
