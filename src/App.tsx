@@ -5,6 +5,7 @@ import { Keyboard } from './components/Keyboard'
 import { Reveal } from './components/Reveal'
 import { days, normalizeLetter } from './content'
 import {
+  LAUNCH_DATE,
   MAX_GUESSES,
   ROOT_LENGTH,
   contentIndexFor,
@@ -12,6 +13,7 @@ import {
   keyboardMarks,
 } from './game'
 import {
+  type DayProgress,
   currentStreak,
   loadProgress,
   loadSettings,
@@ -21,27 +23,69 @@ import {
   saveSettings,
 } from './storage'
 
+// Test mode (?test, or ?test&day=12) plays any day without touching saved progress or stats.
+// The public link only ever plays today's root.
+const params = new URLSearchParams(location.search)
+const testMode = params.has('test')
+
+function testDayNumber(): number {
+  const asked = Number(params.get('day'))
+  return Number.isInteger(asked) && asked >= 1 && asked <= days.length ? asked : 1
+}
+
+function TestBar({ dayNumber }: { dayNumber: number }) {
+  const go = (n: number) => {
+    location.search = `?test&day=${n}`
+  }
+  return (
+    <nav className="test-bar">
+      <span>מצב בדיקה</span>
+      <button className="chip" onClick={() => go(dayNumber - 1)} disabled={dayNumber <= 1}>
+        הקודם
+      </button>
+      <select value={dayNumber} onChange={(e) => go(Number(e.target.value))} aria-label="יום">
+        {days.map((d) => (
+          <option key={d.day} value={d.day}>
+            יום {d.day}
+          </option>
+        ))}
+      </select>
+      <button className="chip" onClick={() => go(dayNumber + 1)} disabled={dayNumber >= days.length}>
+        הבא
+      </button>
+      <button className="chip" onClick={() => go(dayNumber)}>
+        מההתחלה
+      </button>
+    </nav>
+  )
+}
+
 export default function App() {
-  const dayNumber = useMemo(() => dayNumberFor(new Date()), [])
+  const dayNumber = useMemo(() => (testMode ? testDayNumber() : dayNumberFor(new Date())), [])
   const day = days[contentIndexFor(dayNumber, days.length)]
 
-  const [progress, setProgress] = useState(() => loadProgress(dayNumber))
+  const [progress, setProgress] = useState<DayProgress>(() =>
+    testMode ? { dayNumber, guesses: [], status: 'playing' } : loadProgress(dayNumber),
+  )
   const [stats, setStats] = useState(loadStats)
   const [settings, setSettings] = useState(loadSettings)
   const [current, setCurrent] = useState<string[]>([])
   const [toast, setToast] = useState<string | null>(null)
   const [shake, setShake] = useState(false)
-  const [helpOpen, setHelpOpen] = useState(() => !loadSettings().seenHelp)
+  const [helpOpen, setHelpOpen] = useState(() => !testMode && !loadSettings().seenHelp)
 
   const { guesses, status } = progress
   const finished = status !== 'playing'
   const marks = useMemo(() => keyboardMarks(guesses, day.root), [guesses, day.root])
 
-  useEffect(() => saveProgress(progress), [progress])
+  useEffect(() => {
+    if (!testMode) saveProgress(progress)
+  }, [progress])
   useEffect(() => saveSettings(settings), [settings])
 
   // A new day starts at local midnight, even if the app stayed open.
   useEffect(() => {
+    if (testMode) return
     const onVisible = () => {
       if (document.visibilityState === 'visible' && dayNumberFor(new Date()) !== dayNumber) location.reload()
     }
@@ -79,7 +123,7 @@ export default function App() {
     setProgress({ dayNumber, guesses: nextGuesses, status: nextStatus })
     setCurrent([])
     if (won || lost) {
-      setStats((s) => recordFinish(s, dayNumber, won))
+      if (!testMode) setStats((s) => recordFinish(s, dayNumber, won))
       setTimeout(() => document.querySelector('.reveal')?.scrollIntoView({ behavior: 'smooth' }), 600)
     }
   }, [current, guesses, day.root, dayNumber, finished])
@@ -113,6 +157,8 @@ export default function App() {
         </div>
       </header>
 
+      {testMode && <TestBar dayNumber={dayNumber} />}
+
       <main>
         <Board guesses={guesses} current={current} answer={day.root} shake={shake} />
 
@@ -130,6 +176,7 @@ export default function App() {
             stats={stats}
             showVowels={settings.showVowels}
             onToggleVowels={() => setSettings((s) => ({ ...s, showVowels: !s.showVowels }))}
+            showCountdown={!testMode && LAUNCH_DATE !== null}
           />
         )}
       </main>

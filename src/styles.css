@@ -583,3 +583,29 @@ main {
     animation: none !important;
   }
 }
+
+/* Only in test mode (?test). */
+.test-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-bottom: 1px dashed var(--border);
+}
+
+.test-bar select {
+  font: inherit;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+}
+
+.test-bar .chip:disabled {
+  opacity: 0.4;
+}

@@ -18,6 +18,7 @@ interface Props {
   stats: Stats
   showVowels: boolean
   onToggleVowels: () => void
+  showCountdown: boolean
 }
 
 // Recorded audio comes later. Until then, the phone's own Arabic voice reads the word if it has one.
@@ -53,7 +54,7 @@ function Countdown() {
   )
 }
 
-export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels }: Props) {
+export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels, showCountdown }: Props) {
   const voice = useArabicVoice()
   const [shared, setShared] = useState(false)
   const ar = (text: string) => (showVowels ? text : stripVowels(text))
@@ -158,9 +159,11 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
         </div>
       </div>
 
-      <p className="next">
-        השורש הבא בעוד <Countdown />
-      </p>
+      {showCountdown && (
+        <p className="next">
+          השורש הבא בעוד <Countdown />
+        </p>
+      )}
     </section>
   )
 }
