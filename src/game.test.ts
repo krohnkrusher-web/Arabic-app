@@ -16,15 +16,21 @@ describe('scoreGuess', () => {
 })
 
 describe('dayNumberFor', () => {
+  const launch = { year: 2026, month: 10, day: 28 }
+
   it('starts at 1 and counts local calendar days', () => {
-    expect(dayNumberFor(new Date(2026, 9, 28, 0, 1))).toBe(1)
-    expect(dayNumberFor(new Date(2026, 9, 28, 23, 59))).toBe(1)
-    expect(dayNumberFor(new Date(2026, 9, 29, 0, 0))).toBe(2)
-    expect(dayNumberFor(new Date(2026, 11, 1, 12))).toBe(35)
+    expect(dayNumberFor(new Date(2026, 9, 28, 0, 1), launch)).toBe(1)
+    expect(dayNumberFor(new Date(2026, 9, 28, 23, 59), launch)).toBe(1)
+    expect(dayNumberFor(new Date(2026, 9, 29, 0, 0), launch)).toBe(2)
+    expect(dayNumberFor(new Date(2026, 11, 1, 12), launch)).toBe(35)
   })
 
   it('never goes below day 1', () => {
-    expect(dayNumberFor(new Date(2026, 0, 1))).toBe(1)
+    expect(dayNumberFor(new Date(2026, 0, 1), launch)).toBe(1)
+  })
+
+  it('stays on day 1 until there is a launch date', () => {
+    expect(dayNumberFor(new Date(2027, 5, 1), null)).toBe(1)
   })
 
   it('wraps around the content', () => {
