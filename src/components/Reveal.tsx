@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { stripVowels, type Day, type Register } from '../content'
 import { shareText } from '../game'
-import type { Stats } from '../storage'
+import { loadNews, type Stats } from '../storage'
+import { newsScore } from '../translate'
+import { speak, useArabicVoice } from '../voice'
+import { NewsPath } from './NewsPath'
 
 const REGISTER_LABEL: Record<Register, string> = {
   msa: 'ספרותית',
@@ -19,19 +22,8 @@ interface Props {
   showVowels: boolean
   onToggleVowels: () => void
   showCountdown: boolean
-}
-
-// Recorded audio comes later. Until then, the phone's own Arabic voice reads the word if it has one.
-function useArabicVoice() {
-  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null)
-  useEffect(() => {
-    if (!('speechSynthesis' in window)) return
-    const pick = () => setVoice(speechSynthesis.getVoices().find((v) => v.lang.startsWith('ar')) ?? null)
-    pick()
-    speechSynthesis.addEventListener('voiceschanged', pick)
-    return () => speechSynthesis.removeEventListener('voiceschanged', pick)
-  }, [])
-  return voice
+  // Test mode plays the written path without saving it.
+  saveNewsProgress: boolean
 }
 
 function secondsToMidnight() {
@@ -54,9 +46,13 @@ function Countdown() {
   )
 }
 
-export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels, showCountdown }: Props) {
+export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels, onToggleVowels, showCountdown, saveNewsProgress }: Props) {
   const voice = useArabicVoice()
   const [shared, setShared] = useState(false)
+  const [newsOpen, setNewsOpen] = useState(false)
+  const [newsResult, setNewsResult] = useState(() =>
+    day.news && saveNewsProgress ? newsScore(day.news, loadNews(dayNumber)) : null,
+  )
   const ar = (text: string) => (showVowels ? text : stripVowels(text))
 
   const play = (text: string, audio?: string) => {
@@ -64,13 +60,7 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
       void new Audio(audio).play()
       return
     }
-    if (!voice) return
-    speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.voice = voice
-    u.lang = voice.lang
-    u.rate = 0.85
-    speechSynthesis.speak(u)
+    speak(voice, text)
   }
 
   const share = async () => {
@@ -153,11 +143,30 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
           <strong>מסלול מדובר</strong>
           <span>סצנה עם דמות שמדברת איתך. בקרוב.</span>
         </div>
-        <div className="path soon">
-          <strong>מסלול כתוב</strong>
-          <span>פסקת חדשות קצרה עם השורש. בקרוב.</span>
-        </div>
+        {day.news ? (
+          <button className="path open" onClick={() => setNewsOpen(true)}>
+            <strong>מסלול כתוב</strong>
+            <span>{newsResult === null ? 'ידיעה קצרה מהחדשות עם השורש. קוראים ומתרגמים.' : `הציון שלך: ${newsResult}/100`}</span>
+          </button>
+        ) : (
+          <div className="path soon">
+            <strong>מסלול כתוב</strong>
+            <span>פסקת חדשות קצרה עם השורש. בקרוב.</span>
+          </div>
+        )}
       </div>
+
+      {newsOpen && day.news && (
+        <NewsPath
+          news={day.news}
+          dayNumber={dayNumber}
+          save={saveNewsProgress}
+          onClose={(score) => {
+            setNewsOpen(false)
+            setNewsResult(score)
+          }}
+        />
+      )}
 
       {showCountdown && (
         <p className="next">

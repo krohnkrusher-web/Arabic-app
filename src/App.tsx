@@ -177,6 +177,7 @@ export default function App() {
             showVowels={settings.showVowels}
             onToggleVowels={() => setSettings((s) => ({ ...s, showVowels: !s.showVowels }))}
             showCountdown={!testMode && LAUNCH_DATE !== null}
+            saveNewsProgress={!testMode}
           />
         )}
       </main>

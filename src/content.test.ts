@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LETTERS, days, knownRoots, lookupRoot, normalizeLetter, stripVowels } from './content'
+import { scoreSentence } from './translate'
 
 const letters = new Set(LETTERS.map((l) => l.ar))
 
@@ -16,6 +17,21 @@ describe('content', () => {
     for (const w of day.words) {
       expect(w.ar && w.he && w.translit).toBeTruthy()
       expect(['msa', 'pal', 'both']).toContain(w.register)
+    }
+  })
+
+  it.each(days.filter((d) => d.news).map((d) => [d.day, d.news!] as const))('day %i news is usable', (_, news) => {
+    expect(news.source.url).toMatch(/^https:\/\//)
+    expect(news.sentences.length).toBeGreaterThanOrEqual(2)
+    const text = [news.title, ...news.sentences.map((s) => s.ar), ...(news.glossary ?? []).map((g) => g.ar)]
+    // Printed like a newspaper: no vowel marks.
+    text.forEach((t) => expect(stripVowels(t)).toBe(t))
+    // At least one word from the day's root is highlighted.
+    expect(news.sentences.some((s) => /\*[^*]+\*/.test(s.ar))).toBe(true)
+    for (const s of news.sentences) {
+      expect(s.keys.length).toBeGreaterThanOrEqual(3)
+      // The model translation must pass its own check, or the keys are wrong.
+      expect(scoreSentence(s, s.he).found).not.toContain(false)
     }
   })
 
