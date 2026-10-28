@@ -12,6 +12,22 @@ export interface FamilyWord {
   audio?: string
 }
 
+// One sentence of the day's news paragraph. Words built from the day's root are wrapped in *stars*.
+// keys are the meaning parts a Hebrew translation must contain; each lists the accepted spellings.
+export interface NewsSentence {
+  ar: string
+  he: string
+  keys: string[][]
+}
+
+// The written path: a short news paragraph rewritten in simple MSA from a real article, which it links to.
+export interface News {
+  source: { name: string; url: string; date: string }
+  title: string
+  sentences: NewsSentence[]
+  glossary?: { ar: string; he: string }[]
+}
+
 export interface Day {
   day: number
   root: string[]
@@ -19,6 +35,7 @@ export interface Day {
   hebrewCousin: string | null
   funFact?: string
   words: FamilyWord[]
+  news?: News
 }
 
 export interface KnownRoot {

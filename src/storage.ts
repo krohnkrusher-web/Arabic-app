@@ -19,7 +19,7 @@ export interface Settings {
   seenHelp: boolean
 }
 
-const KEYS = { progress: 'jidhr.progress', stats: 'jidhr.stats', settings: 'jidhr.settings' }
+const KEYS = { progress: 'jidhr.progress', stats: 'jidhr.stats', settings: 'jidhr.settings', news: 'jidhr.news' }
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -73,3 +73,18 @@ export function currentStreak(stats: Stats, today: number): number {
 
 export const loadSettings = () => read<Settings>(KEYS.settings, { showVowels: true, seenHelp: false })
 export const saveSettings = (s: Settings) => write(KEYS.settings, s)
+
+// The written path: the translations typed today and how far through the paragraph the person got.
+export interface NewsProgress {
+  dayNumber: number
+  answers: string[]
+  checked: number
+}
+
+export function loadNews(dayNumber: number): NewsProgress {
+  const fresh: NewsProgress = { dayNumber, answers: [], checked: 0 }
+  const saved = read<NewsProgress>(KEYS.news, fresh)
+  return saved.dayNumber === dayNumber ? saved : fresh
+}
+
+export const saveNews = (p: NewsProgress) => write(KEYS.news, p)

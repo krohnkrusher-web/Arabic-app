@@ -583,3 +583,171 @@ main {
     animation: none !important;
   }
 }
+
+/* Written path */
+
+button.path.open {
+  border-style: solid;
+  background: var(--surface);
+  text-align: start;
+}
+
+.sheet.news {
+  max-height: 100dvh;
+  height: 100dvh;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.news-top h2 {
+  margin: 0;
+}
+
+.news-title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+
+.news-text,
+.news-sentence {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 2;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.news mark {
+  background: var(--tag-pal);
+  color: inherit;
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.glossary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.9rem;
+}
+
+.glossary .ar {
+  font-size: 1.15rem;
+}
+
+.news-source {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.news-source a {
+  color: var(--accent);
+}
+
+.translation {
+  font: inherit;
+  font-size: 1.1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.primary:disabled {
+  opacity: 0.5;
+}
+
+.check {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-score {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.keys {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.keys li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.keys .hit {
+  background: var(--tag-both);
+}
+
+.keys .miss {
+  background: var(--tag-pal);
+}
+
+.model {
+  margin: 0;
+  background: var(--note-bg);
+  border-radius: 12px;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+
+.news-total {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.news-total strong {
+  font-size: 3rem;
+}
+
+.summary {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary p {
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+.summary .ar {
+  font-size: 1.2rem;
+}
+
+.news .chip {
+  align-self: flex-start;
+}
+
+.glossary li span:last-child {
+  color: var(--muted);
+}

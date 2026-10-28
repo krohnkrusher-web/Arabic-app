@@ -20,6 +20,7 @@ Pushing to `main` builds and deploys to GitHub Pages (turn it on once under Sett
 Content lives in `content/he-ar/` (Hebrew speakers learning Arabic; a later Arabic-to-Hebrew edition gets its own folder).
 
 - `days/NN.json` is one day: the root, the Hebrew cousin root shown in the reveal (or null), an optional fun fact, and 8 to 12 family words. Each word has the Arabic with vowel marks, its Hebrew meaning, a Hebrew-letter transliteration, and a register: `msa`, `pal` or `both`. `audio` can point to a recorded file once recordings exist; until then the phone's Arabic voice reads the word.
+- `news` (optional, in a day file) is the written path: a short news paragraph that uses the day's root, reworded from a real article (Makan first, then Al Arabiya, then Asharq Al-Awsat; non-political) at the newspaper's own level and without vowel marks. Words from the root are wrapped in `*stars*` to highlight them. Each sentence has a model Hebrew translation and `keys`: the meaning parts a translation must contain, each a list of accepted Hebrew spellings. The phone scores a typed translation by how many keys it finds (Hebrew prefixes like ו, ה, ב, ל are allowed), and `npm test` checks that every model translation passes its own keys.
 - `roots.json` is the list of real roots the puzzle recognises. A wrong guess that is a real root shows one word from it.
 
 Days are played in file order, one per calendar day from 28 October 2026, and loop when they run out. `npm test` checks every day file.
