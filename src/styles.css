@@ -1,41 +1,73 @@
 :root {
-  --bg: #faf6ef;
-  --surface: #ffffff;
-  --text: #2a2622;
-  --muted: #7a7065;
-  --border: #ddd3c4;
-  --accent: #b5522e;
+  /* Desert: dunes at sunset, sadu red, a black goat-hair tent. The board colors stay as they were. */
+  --bg: #f8ebe4;
+  --surface: #fffaf6;
+  --text: #3a1d1b;
+  --muted: #8a5a4a;
+  --border: #e6cfc2;
+  --accent: #7d1e22;
+  --accent-ink: #7d1e22;
   --correct: #4f8a3b;
   --present: #c99a1e;
   --absent: #8d867d;
-  --key: #ece4d6;
-  --key-text: #2a2622;
-  --note-bg: #fff3d6;
-  --tag-msa: #dbe7f5;
-  --tag-pal: #f7dfd3;
-  --tag-both: #e3eedb;
-  --font-he: 'Rubik', system-ui, sans-serif;
+  --key: #fffaf6;
+  --key-text: #3a1d1b;
+  --note-bg: #fbe1cc;
+  --tag-msa: #e0e3f0;
+  --tag-pal: #f6d3c3;
+  --tag-both: #e2e9d3;
+  --chip-bg: rgb(255 248 242 / 0.85);
+  /* Header art */
+  --sky-top: #fbd9cc;
+  --sky-bottom: #fde9dc;
+  --dune1: #f2bfa0;
+  --dune2: #e7a283;
+  --dune3: #d98a6c;
+  --tent: #2a1f1c;
+  --tent-door: #5a2a22;
+  --camel: #b9735a;
+  --dallah: #8a5a2a;
+  --sun: #ffc79a;
+  --fire-glow: 0.5;
+  --night: 0;
+  --hero: clamp(150px, 24dvh, 200px);
+  --font-he: 'Assistant', system-ui, sans-serif;
   --font-ar: 'Noto Naskh Arabic', 'Geeza Pro', 'Arial', serif;
+  --font-brand: 'Rakkas', 'Noto Naskh Arabic', serif;
+  --font-sign: 'Secular One', 'Assistant', sans-serif;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1d1a17;
-    --surface: #2a2622;
-    --text: #f2ece3;
-    --muted: #a99f92;
-    --border: #463f37;
-    --accent: #e0805a;
+    --bg: #221b26;
+    --surface: #2d2430;
+    --text: #f5e6da;
+    --muted: #c9a99a;
+    --border: #47394a;
+    --accent: #a3262a;
+    --accent-ink: #ffb37a;
     --correct: #5b9a45;
     --present: #c09221;
     --absent: #4d4740;
-    --key: #3a342e;
-    --key-text: #f2ece3;
-    --note-bg: #3d3420;
-    --tag-msa: #2c3a4c;
-    --tag-pal: #4c3328;
-    --tag-both: #33412b;
+    --key: #33293a;
+    --key-text: #f5e6da;
+    --note-bg: #3e2b2c;
+    --tag-msa: #2f3248;
+    --tag-pal: #4a2c2c;
+    --tag-both: #33402b;
+    --chip-bg: rgb(40 30 44 / 0.8);
+    --sky-top: #1c1838;
+    --sky-bottom: #3b2a4c;
+    --dune1: #4d3652;
+    --dune2: #5f4158;
+    --dune3: #714b57;
+    --tent: #120d10;
+    --tent-door: #ffb25c;
+    --camel: #2b2030;
+    --dallah: #d8b26a;
+    --fire-glow: 0.85;
+    --night: 1;
     color-scheme: dark;
   }
 }
@@ -72,49 +104,101 @@ button {
   flex-direction: column;
 }
 
+/* Header: the desert drawing runs edge to edge behind the title, then a strip of sadu weaving. */
 .top {
+  position: relative;
+  margin: 0 -12px;
+  height: calc(var(--hero) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  overflow: hidden;
+}
+
+.desert {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.d-dune1 { fill: var(--dune1); }
+.d-dune2 { fill: var(--dune2); }
+.d-dune3 { fill: var(--dune3); }
+.d-camel { fill: var(--camel); }
+.d-tent { fill: var(--tent); }
+.d-rope { stroke: var(--tent); stroke-width: 0.8; fill: none; }
+.d-door { fill: var(--tent-door); }
+.d-dallah { fill: var(--dallah); stroke: var(--dallah); }
+.d-sun { fill: var(--sun); opacity: calc(1 - var(--night)); }
+.d-moon { fill: #f6e3b4; opacity: var(--night); }
+.d-stars { fill: #fff; opacity: var(--night); }
+.d-tent-glow { opacity: var(--night); }
+
+.top-bar {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 0;
 }
 
 .top h1 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-align: center;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
 }
 
-.top h1 .ar {
-  font-size: 1.5rem;
-  color: var(--accent);
+.brand-ar {
+  font-family: var(--font-brand);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 9vw, 2.5rem);
+  color: var(--accent-ink);
 }
 
 .title-he {
-  font-size: 0.95rem;
+  font-family: var(--font-sign);
+  font-weight: 400;
+  font-size: 0.85rem;
   color: var(--muted);
-  font-weight: 500;
+}
+
+.icon-btn,
+.streak {
+  height: 38px;
+  border-radius: 19px;
+  border: none;
+  background: var(--chip-bg);
+  color: var(--accent-ink);
+  font-weight: 700;
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-weight: 700;
+  width: 38px;
 }
 
 .streak {
-  min-width: 36px;
-  text-align: center;
-  font-weight: 700;
+  min-width: 38px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sadu {
+  display: block;
+  flex: none;
+  width: calc(100% + 24px);
+  height: 22px;
+  margin: 0 -12px;
+}
+
+.sadu-bottom {
+  height: 13px;
+  margin-top: 14px;
+  margin-bottom: calc(-16px - env(safe-area-inset-bottom));
 }
 
 main {
@@ -127,7 +211,7 @@ main {
 
 /* Tiles take the room the header and keyboard leave, capped by screen width. */
 .board {
-  --tile: clamp(34px, min(20vw, calc((100dvh - 360px) / 6.5)), 76px);
+  --tile: clamp(30px, min(18vw, calc((100dvh - 356px - var(--hero)) / 6.5)), 72px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -154,7 +238,7 @@ main {
   display: grid;
   place-items: center;
   border: 2px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(var(--tile) * 0.3);
   font-family: var(--font-ar);
   font-size: calc(var(--tile) * 0.55);
   line-height: 1;
@@ -232,9 +316,9 @@ main {
 .key {
   flex: 1;
   max-width: 52px;
-  height: clamp(36px, 6dvh, 54px);
+  height: clamp(34px, 5.6dvh, 54px);
   border: none;
-  border-radius: 8px;
+  border-radius: 14px;
   background: var(--key);
   color: var(--key-text);
   display: flex;
@@ -321,7 +405,7 @@ main {
 
 .reveal-root {
   font-size: 3rem;
-  color: var(--accent);
+  color: var(--accent-ink);
   line-height: 1.4;
   word-spacing: 0.2em;
 }
@@ -415,7 +499,7 @@ main {
 
 .word-translit {
   font-size: 1.05rem;
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 .word-he {
@@ -1246,5 +1330,5 @@ button.path.open {
 
 .bubble-hint {
   font-size: 0.75rem;
-  color: var(--accent);
+  color: var(--accent-ink);
 }
