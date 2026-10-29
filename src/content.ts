@@ -40,8 +40,10 @@ export interface SceneLine {
 }
 
 // One accepted spoken answer. id lets the next line react to what was chosen.
+// any lists more ways to say it: each counts when all its words were heard, with anything around them.
 export interface SceneReply extends SceneLine {
   id?: string
+  any?: string[]
 }
 
 export interface SceneTurn {
@@ -50,8 +52,8 @@ export interface SceneTurn {
   sayAfter?: Record<string, SceneLine>
   // What to say, in Hebrew, as a short goal. The Arabic answers are never shown up front.
   intent: string
-  // Accepted answers: anything sensible. A reply matches when all its words were heard,
-  // so short ones ("قهوة") act as keywords. The first is the model answer shown after two misses.
+  // Accepted answers, one per kind of answer (a drink, yes, no...), each with many ways to say it.
+  // The first is the model answer shown after two misses.
   replies: SceneReply[]
 }
 
@@ -63,6 +65,8 @@ export interface Scene {
   // What the character says when the answer doesn't fit.
   confused: SceneLine
   closing: SceneLine
+  // The closing line when it reacts to the last answer, keyed by that answer's id.
+  closingAfter?: Record<string, SceneLine>
 }
 
 export interface Day {
