@@ -584,7 +584,7 @@ main {
   }
 }
 
-/* Written path: an article page on a made-up Arabic news site. */
+/* Written path: an article page on a made-up Arabic news site. White, like the real sites, even in dark mode. */
 
 button.path.open {
   border-style: solid;
@@ -613,17 +613,6 @@ button.path.open {
   flex-direction: column;
 }
 
-@media (prefers-color-scheme: dark) {
-  .sheet.news {
-    --site-dark: #7d0b1d;
-    --link: #ff6b7d;
-    --page: #121212;
-    --ink: #ededed;
-    --ink-soft: #a3a3a3;
-    --line: #2c2c2c;
-    --tint: #1e1e1e;
-  }
-}
 
 .news .muted {
   color: var(--ink-soft);
@@ -923,11 +912,11 @@ button.path.open {
 }
 
 .keys .hit {
-  background: var(--tag-both);
+  background: #e3eedb;
 }
 
 .keys .miss {
-  background: var(--tag-pal);
+  background: #f7dfd3;
 }
 
 .model {
