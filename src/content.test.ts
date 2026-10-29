@@ -64,3 +64,19 @@ describe('arabicDate', () => {
     expect(arabicDate('8.10.2026')).toBe('الخميس 8 تشرين الأول 2026')
   })
 })
+
+describe('spoken scenes', () => {
+  for (const d of days.filter((d) => d.scene)) {
+    it(`day ${d.day} scene is complete`, () => {
+      const turns = d.scene!.turns
+      expect(turns.length).toBeGreaterThan(0)
+      turns.forEach((t, i) => {
+        expect(t.intent.trim()).not.toBe('')
+        expect(t.replies.length).toBeGreaterThan(0)
+        // Every reaction line answers a reply id from the turn before.
+        const prevIds = new Set(i > 0 ? turns[i - 1].replies.map((r) => r.id) : [])
+        for (const id of Object.keys(t.sayAfter ?? {})) expect(prevIds.has(id)).toBe(true)
+      })
+    })
+  }
+})

@@ -30,6 +30,38 @@ export interface News {
   glossary?: { ar: string; he: string }[]
 }
 
+// The spoken path: a short scene where a character talks and the learner answers out loud.
+// Words built from the day's root are wrapped in *stars*, as in the news.
+export interface SceneLine {
+  ar: string
+  translit: string
+  he: string
+  audio?: string
+}
+
+// One accepted spoken answer. id lets the next line react to what was chosen.
+export interface SceneReply extends SceneLine {
+  id?: string
+}
+
+export interface SceneTurn {
+  say: SceneLine
+  // The character's line when it reacts to the previous answer, keyed by that answer's id.
+  sayAfter?: Record<string, SceneLine>
+  // What to say, in Hebrew. The Arabic answers are never shown up front.
+  intent: string
+  // Every accepted answer. The first one is the model answer shown and played after two misses.
+  replies: SceneReply[]
+}
+
+export interface Scene {
+  place: string
+  character: { name: string; ar: string; look: 'abu-sami' }
+  setting: 'kiosk'
+  turns: SceneTurn[]
+  closing: SceneLine
+}
+
 export interface Day {
   day: number
   root: string[]
@@ -38,6 +70,7 @@ export interface Day {
   funFact?: string
   words: FamilyWord[]
   news?: News
+  scene?: Scene
 }
 
 export interface KnownRoot {

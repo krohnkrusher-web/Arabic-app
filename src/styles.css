@@ -584,6 +584,17 @@ main {
   }
 }
 
+/* Shared by the scene sheet. */
+.news-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.news-top h2 {
+  margin: 0;
+}
+
 /* Written path: an article page on a made-up Arabic news site. White, like the real sites, even in dark mode. */
 
 button.path.open {
@@ -984,4 +995,240 @@ button.path.open {
 
 .test-bar .chip:disabled {
   opacity: 0.4;
+}
+
+/* Spoken path */
+
+.sheet.scene {
+  max-height: 100dvh;
+  height: 100dvh;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stage {
+  position: relative;
+  flex: 0 0 auto;
+  height: min(46dvh, 340px);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.scene-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.character {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  height: 62%;
+}
+
+.character .mouth {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(0.3);
+}
+
+.character.talking .mouth {
+  animation: talk 180ms ease-in-out infinite alternate;
+}
+
+.character .eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 4s infinite;
+}
+
+@keyframes talk {
+  from {
+    transform: scaleY(0.3);
+  }
+  to {
+    transform: scaleY(1.3);
+  }
+}
+
+@keyframes blink {
+  0%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+  98% {
+    transform: scaleY(0.1);
+  }
+}
+
+.bubble {
+  position: absolute;
+  top: 10px;
+  inset-inline: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: none;
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: start;
+  font: inherit;
+  animation: pop 200ms ease-out;
+}
+
+.bubble-name {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.bubble-ar {
+  font-size: 1.35rem;
+  line-height: 1.7;
+  direction: rtl;
+}
+
+.bubble-help {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.scene mark,
+.bubble mark {
+  background: var(--note-bg);
+  color: inherit;
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.scene-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scene-place {
+  font-weight: 700;
+  margin: 0;
+}
+
+.say-options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.say-options li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 10px;
+}
+
+.say-options .ar {
+  font-size: 1.25rem;
+}
+
+.option-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.intent {
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.model-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+.model-answer .ar {
+  font-size: 1.4rem;
+}
+
+.scene-feedback {
+  text-align: center;
+  margin: 0;
+  color: var(--muted);
+}
+
+.scene-feedback.ok {
+  color: var(--correct);
+  font-weight: 700;
+}
+
+.mic {
+  align-self: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.mic span {
+  font-size: 0.65rem;
+}
+
+.mic:disabled {
+  opacity: 0.4;
+}
+
+.mic.on {
+  opacity: 1;
+  animation: pulse 900ms ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 12px rgb(181 82 46 / 0.25);
+  }
+}
+
+.center {
+  text-align: center;
+}
+
+.root-words {
+  font-size: 1.15rem;
+}
+
+.chip.wide {
+  width: 100%;
+  padding: 10px;
+}
+
+.bubble-hint {
+  font-size: 0.75rem;
+  color: var(--accent);
 }
