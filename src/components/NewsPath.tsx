@@ -14,7 +14,7 @@ interface Props {
 const plain = (text: string) => text.replace(/\*/g, '')
 
 // The made-up news site the written path is published on.
-const OUTLET = { name: 'الضاد' }
+const OUTLET = { name: 'الشِّقّ' }
 
 // Words per minute for the "reading time" line.
 const READING_SPEED = 120

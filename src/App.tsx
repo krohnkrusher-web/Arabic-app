@@ -153,8 +153,8 @@ export default function App() {
             ?
           </button>
           <h1>
-            <span className="brand-ar">بَيْت الشَّعَر</span>
-            <span className="title-he">בית א־שַּׁעַר · שורש היום</span>
+            <span className="brand-ar">جِذْر</span>
+            <span className="title-he">ג׳ד׳ר · שורש היום</span>
           </h1>
           <div className="streak" title="ימים ברצף">
             <svg width="13" height="15" viewBox="0 0 14 16" aria-hidden="true">
