@@ -14,7 +14,7 @@ interface Props {
 const plain = (text: string) => text.replace(/\*/g, '')
 
 // The made-up newspaper the written path is printed in.
-const OUTLET = { name: 'الجذر', tagline: 'صحيفة يومية للقارئ الجديد' }
+const OUTLET = { name: 'الضاد', tagline: 'صحيفة لغة الضاد اليومية' }
 
 const SECTIONS = ['محليات', 'العالم', 'اقتصاد', 'علوم', 'صحة', 'ثقافة', 'رياضة', 'منوعات']
 const WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
