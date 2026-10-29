@@ -30,7 +30,8 @@
   --sun: #ffc79a;
   --fire-glow: 0.5;
   --night: 0;
-  --hero: clamp(150px, 24dvh, 200px);
+  --hero: clamp(116px, 15.5dvh, 150px);
+  --key-h: clamp(34px, 5.2dvh, 50px);
   --font-he: 'Assistant', system-ui, sans-serif;
   --font-ar: 'Noto Naskh Arabic', 'Geeza Pro', 'Arial', serif;
   --font-brand: 'Rakkas', 'Noto Naskh Arabic', serif;
@@ -139,7 +140,7 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  padding: 14px 16px 0;
+  padding: 10px 16px 0;
 }
 
 .top h1 {
@@ -153,7 +154,7 @@ button {
 .brand-ar {
   font-family: var(--font-brand);
   font-weight: 400;
-  font-size: clamp(1.9rem, 9vw, 2.5rem);
+  font-size: clamp(1.7rem, 8vw, 2.2rem);
   color: var(--accent-ink);
 }
 
@@ -191,13 +192,13 @@ button {
   display: block;
   flex: none;
   width: calc(100% + 24px);
-  height: 22px;
+  height: 16px;
   margin: 0 -12px;
 }
 
 .sadu-bottom {
-  height: 13px;
-  margin-top: 14px;
+  height: 9px;
+  margin-top: 10px;
   margin-bottom: calc(-16px - env(safe-area-inset-bottom));
 }
 
@@ -211,7 +212,7 @@ main {
 
 /* Tiles take the room the header and keyboard leave, capped by screen width. */
 .board {
-  --tile: clamp(30px, min(18vw, calc((100dvh - 356px - var(--hero)) / 6.5)), 72px);
+  --tile: clamp(34px, min(20vw, calc((100dvh - var(--hero) - 5 * var(--key-h) - 105px) / 6)), 76px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -316,7 +317,7 @@ main {
 .key {
   flex: 1;
   max-width: 52px;
-  height: clamp(34px, 5.6dvh, 54px);
+  height: var(--key-h);
   border: none;
   border-radius: 14px;
   background: var(--key);
