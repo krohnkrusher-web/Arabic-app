@@ -1,5 +1,5 @@
 // Network first for pages so a new day's content arrives, cache first for hashed assets.
-const CACHE = 'jidhr-v1'
+const CACHE = 'jidhr-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))

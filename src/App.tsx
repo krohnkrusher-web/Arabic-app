@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Board } from './components/Board'
+import { DesertArt, Sadu } from './components/DesertHeader'
 import { Help } from './components/Help'
 import { Keyboard } from './components/Keyboard'
 import { Reveal } from './components/Reveal'
@@ -146,16 +147,24 @@ export default function App() {
   return (
     <div className="app">
       <header className="top">
-        <button className="icon-btn" onClick={() => setHelpOpen(true)} aria-label="איך משחקים">
-          ?
-        </button>
-        <h1>
-          <span className="ar">جِذْر</span> <span className="title-he">ג׳ד׳ר · שורש היום</span>
-        </h1>
-        <div className="streak" title="ימים ברצף">
-          🔥 {currentStreak(stats, dayNumber)}
+        <DesertArt />
+        <div className="top-bar">
+          <button className="icon-btn" onClick={() => setHelpOpen(true)} aria-label="איך משחקים">
+            ?
+          </button>
+          <h1>
+            <span className="brand-ar">بَيْت الشَّعَر</span>
+            <span className="title-he">בית א־שַּׁעַר · שורש היום</span>
+          </h1>
+          <div className="streak" title="ימים ברצף">
+            <svg width="13" height="15" viewBox="0 0 14 16" aria-hidden="true">
+              <path d="M7 1c1 3 5 4.5 5 9a5 5 0 0 1-10 0c0-2 1-3.2 2-4 0 1.5.8 2.4 1.6 2.6C5 6 5.6 3.4 7 1z" fill="currentColor" />
+            </svg>
+            {currentStreak(stats, dayNumber)}
+          </div>
         </div>
       </header>
+      <Sadu className="sadu" id="sadu-top" />
 
       {testMode && <TestBar dayNumber={dayNumber} />}
 
@@ -181,6 +190,8 @@ export default function App() {
           />
         )}
       </main>
+
+      <Sadu className="sadu sadu-bottom" id="sadu-bottom" scale={0.6} />
 
       {toast && <div className="toast">{toast}</div>}
 
