@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { stripVowels, type News } from '../content'
 import { loadNews, saveNews } from '../storage'
 import { newsScore, scoreSentence, totalScore } from '../translate'
@@ -13,10 +13,13 @@ interface Props {
 
 const plain = (text: string) => text.replace(/\*/g, '')
 
-// The made-up newspaper the written path is printed in.
-const OUTLET = { name: 'الضاد', tagline: 'صحيفة لغة الضاد اليومية' }
+// The made-up news site the written path is published on.
+const OUTLET = { name: 'الضاد' }
 
-const SECTIONS = ['محليات', 'العالم', 'اقتصاد', 'علوم', 'صحة', 'ثقافة', 'رياضة', 'منوعات']
+// Words per minute for the "reading time" line.
+const READING_SPEED = 120
+
+const SECTIONS = ['الرئيسية', 'محليات', 'العالم', 'اقتصاد', 'علوم', 'صحة', 'ثقافة', 'رياضة', 'منوعات']
 const WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
 // Month names as the Levantine press writes them.
 const MONTHS = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول']
@@ -48,7 +51,14 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
   const [stage, setStage] = useState<'read' | 'translate' | 'summary'>(() =>
     done ? 'summary' : progress.checked > 0 || progress.answers.length > 0 ? 'translate' : 'read',
   )
+  const [large, setLarge] = useState(false)
+  const activeTab = useRef<HTMLSpanElement>(null)
   const [index, setIndex] = useState(() => Math.min(progress.checked, total - 1))
+
+  // Bring today's section into view in the tab strip, like a site does on a section page.
+  useEffect(() => {
+    activeTab.current?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [])
 
   useEffect(() => {
     if (save) saveNews(progress)
@@ -77,36 +87,32 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
   const close = () => onClose(newsScore(news, progress))
 
   const sections = news.section && !SECTIONS.includes(news.section) ? [...SECTIONS, news.section] : SECTIONS
+  const words = news.sentences.map((s) => s.ar).join(' ').split(/\s+/).length
+  const minutes = Math.max(1, Math.round(words / READING_SPEED))
 
   const source = (
     <p className="news-source">
-      על פי{' '}
+      הידיעה נכתבה מחדש על פי{' '}
       <a href={news.source.url} target="_blank" rel="noreferrer">
         {news.source.name}
       </a>
-      , {news.source.date}. בניסוח מחודש, בלי ניקוד, כמו בעיתון.
+      , {news.source.date}, בלי ניקוד, כמו באתר חדשות.
     </p>
   )
 
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label={`מסלול כתוב: ${OUTLET.name}`}>
       <div className="sheet news">
-        <header className={stage === 'read' ? 'masthead' : 'masthead compact'}>
-          <div className="mast-bar">
-            <span className="muted">מסלול כתוב</span>
-            <button className="icon-btn" onClick={close} aria-label="סגירה">
+        <header className="site-head">
+          <div className="site-bar">
+            <span className="ar site-logo">{OUTLET.name}</span>
+            <button className="site-close" onClick={close} aria-label="סגירה">
               ✕
             </button>
           </div>
-          <h2 className="ar mast-name">{OUTLET.name}</h2>
-          <p className="ar mast-tagline">{OUTLET.tagline}</p>
-          <div className="ar mast-dateline">
-            <span>{arabicDate(news.source.date)}</span>
-            <span>العدد {dayNumber}</span>
-          </div>
-          <nav className="ar mast-sections" aria-hidden="true">
+          <nav className="ar site-tabs" aria-hidden="true">
             {sections.map((s) => (
-              <span key={s} className={s === news.section ? 'on' : undefined}>
+              <span key={s} ref={s === news.section ? activeTab : undefined} className={s === news.section ? 'on' : undefined}>
                 {s}
               </span>
             ))}
@@ -114,33 +120,58 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
         </header>
 
         {stage === 'read' && (
-          <article className="story">
-            {news.section && <p className="ar kicker">{news.section}</p>}
-            <h3 className="ar headline">
+          <article className={large ? 'story large' : 'story'}>
+            {news.section && (
+              <p className="ar crumbs">
+                الرئيسية <span aria-hidden="true">‹</span> <b>{news.section}</b>
+              </p>
+            )}
+            <h1 className="ar headline">
               <Marked text={news.title} />
-            </h3>
-            <div className="byline">
-              <span className="ar">بحسب {news.source.name}</span>
+            </h1>
+            <div className="ar meta">
+              <span>
+                <b>{OUTLET.name}</b> - {news.source.name}
+              </span>
+              <span>
+                نُشر: {arabicDate(news.source.date)} · مدة القراءة: {minutes === 1 ? 'دقيقة واحدة' : `${minutes} دقائق`}
+              </span>
+            </div>
+            <div className="tools">
               {voice && (
-                <button className="chip" onClick={() => speak(voice, news.sentences.map((s) => plain(s.ar)).join(' '), 0.8)}>
-                  🔊 הקראה
+                <button
+                  className="tool"
+                  onClick={() => speak(voice, news.sentences.map((s) => plain(s.ar)).join(' '), 0.8)}
+                  aria-label="הקראה"
+                >
+                  🔊
                 </button>
               )}
+              <button className="tool ar" onClick={() => setLarge(!large)} aria-label="גודל טקסט" aria-pressed={large}>
+                <small>T</small>T
+              </button>
             </div>
-            <p className="ar story-body">
+            <div className="ar story-body">
               {news.sentences.map((s, i) => (
-                <Fragment key={i}>
-                  <Marked text={s.ar} />{' '}
-                </Fragment>
+                <p key={i} className={i === 0 ? 'lead' : undefined}>
+                  <Marked text={s.ar} />
+                </p>
               ))}
+            </div>
+            <p className="ar story-credit">
+              المصدر:{' '}
+              <a href={news.source.url} target="_blank" rel="noreferrer">
+                {news.source.name}
+              </a>
             </p>
             {news.glossary && news.glossary.length > 0 && (
               <aside className="glossary">
-                <h4 className="ar">مفردات</h4>
+                <h2 className="ar">كلمات</h2>
                 <ul>
                   {news.glossary.map((g, i) => (
                     <li key={i}>
-                      <span className="ar">{stripVowels(g.ar)}</span> <span>{g.he}</span>
+                      <span className="ar">{stripVowels(g.ar)}</span>
+                      <span>{g.he}</span>
                     </li>
                   ))}
                 </ul>
@@ -160,15 +191,13 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
             <p className="kicker">
               תרגום · משפט {index + 1} מתוך {total}
             </p>
-            <p className="ar story-body context">
+            <div className="ar story-body context">
               {news.sentences.map((s, i) => (
-                <Fragment key={i}>
-                  <span className={i === index ? 'current' : undefined}>
-                    <Marked text={s.ar} />
-                  </span>{' '}
-                </Fragment>
+                <p key={i} className={i === index ? 'current' : undefined}>
+                  <Marked text={s.ar} />
+                </p>
               ))}
-            </p>
+            </div>
             <textarea
               className="translation"
               dir="rtl"

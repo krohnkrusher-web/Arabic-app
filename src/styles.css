@@ -584,7 +584,7 @@ main {
   }
 }
 
-/* Written path: printed as a page of a made-up Arabic newspaper. */
+/* Written path: an article page on a made-up Arabic news site. */
 
 button.path.open {
   border-style: solid;
@@ -593,34 +593,35 @@ button.path.open {
 }
 
 .sheet.news {
-  --paper: #fbf8f1;
-  --ink: #1b1915;
-  --ink-soft: #5d574e;
-  --rule: #1b1915;
-  --hair: #d8d0c2;
-  --press: #b3261e;
-  --marker: #f6e3a1;
-  --font-press: 'Amiri', 'Noto Naskh Arabic', serif;
-  --font-mast: 'Reem Kufi', 'Amiri', serif;
-  background: var(--paper);
+  --site: #c4122f;
+  --site-dark: #9e0e25;
+  --link: #c4122f;
+  --page: #ffffff;
+  --ink: #141414;
+  --ink-soft: #6b6b6b;
+  --line: #e6e6e6;
+  --tint: #f4f4f4;
+  --font-head: 'Noto Kufi Arabic', 'Noto Sans Arabic', sans-serif;
+  --font-body: 'Noto Sans Arabic', 'Noto Naskh Arabic', sans-serif;
+  background: var(--page);
   color: var(--ink);
   max-height: 100dvh;
   height: 100dvh;
   border-radius: 0;
-  padding-top: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
 
 @media (prefers-color-scheme: dark) {
   .sheet.news {
-    --paper: #191714;
-    --ink: #ece6da;
-    --ink-soft: #a69d90;
-    --rule: #ece6da;
-    --hair: #3e3830;
-    --press: #ef6a5c;
-    --marker: #5a4a1c;
+    --site-dark: #7d0b1d;
+    --link: #ff6b7d;
+    --page: #121212;
+    --ink: #ededed;
+    --ink-soft: #a3a3a3;
+    --line: #2c2c2c;
+    --tint: #1e1e1e;
   }
 }
 
@@ -628,81 +629,63 @@ button.path.open {
   color: var(--ink-soft);
 }
 
-.masthead {
-  text-align: center;
-  border-bottom: 3px double var(--rule);
-  margin-bottom: 14px;
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--page);
 }
 
-.mast-bar {
+.site-bar {
+  background: var(--site);
+  color: #fff;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 10px 0 0;
+  position: relative;
+  height: 56px;
 }
 
-.news .icon-btn {
-  background: transparent;
-  border-color: var(--hair);
-  color: var(--ink);
-}
-
-.mast-name {
-  margin: 0;
-  font-family: var(--font-mast);
+.site-logo {
+  font-family: 'Reem Kufi', var(--font-head);
   font-weight: 700;
-  font-size: 3.4rem;
-  line-height: 1.25;
-  letter-spacing: 0;
-}
-
-.masthead.compact .mast-name {
   font-size: 2rem;
+  line-height: 1;
 }
 
-.masthead.compact .mast-tagline,
-.masthead.compact .mast-sections {
-  display: none;
+.site-close {
+  position: absolute;
+  inset-inline-end: 10px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--site-dark);
+  color: #fff;
+  font-weight: 700;
 }
 
-.masthead.compact .mast-dateline {
-  border-bottom: none;
-}
-
-.mast-tagline {
-  margin: 0 0 8px;
-  font-family: var(--font-press);
-  font-size: 0.95rem;
-  color: var(--ink-soft);
-}
-
-.mast-dateline {
+.site-tabs {
   display: flex;
-  justify-content: space-between;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  padding: 3px 2px;
-  font-size: 0.9rem;
-}
-
-.mast-sections {
-  display: flex;
-  gap: 16px;
+  gap: 18px;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 7px 2px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 700;
   white-space: nowrap;
 }
 
-.mast-sections span {
-  color: var(--ink-soft);
+.site-tabs span {
+  padding: 9px 0 7px;
+  border-bottom: 3px solid transparent;
 }
 
-.mast-sections .on {
-  color: var(--press);
-  box-shadow: inset 0 -2px 0 var(--press);
+.site-tabs .on {
+  color: var(--link);
+  font-weight: 700;
+  border-bottom-color: var(--site);
 }
 
 .story {
@@ -710,75 +693,133 @@ button.path.open {
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  padding: 14px 16px calc(12px + env(safe-area-inset-bottom));
+}
+
+.crumbs {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.crumbs b {
+  color: var(--link);
 }
 
 .kicker {
   margin: 0;
-  color: var(--press);
+  color: var(--site);
   font-weight: 700;
   font-size: 0.95rem;
 }
 
-.ar.kicker {
-  font-size: 1.05rem;
-}
-
 .headline {
   margin: 0;
-  font-family: var(--font-press);
-  font-weight: 700;
-  font-size: 2rem;
-  line-height: 1.45;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.55;
 }
 
-.byline {
+.meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--hair);
-  padding-bottom: 10px;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
   color: var(--ink-soft);
 }
 
-.news .chip {
-  background: transparent;
-  border-color: var(--hair);
+.meta b {
   color: var(--ink);
 }
 
+.tools {
+  display: flex;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tool {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--tint);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.tool small {
+  font-size: 0.7em;
+}
+
+.tool[aria-pressed='true'] {
+  background: var(--site);
+  border-color: var(--site);
+  color: #fff;
+}
+
 .story-body {
-  margin: 0;
-  font-family: var(--font-press);
-  font-size: 1.5rem;
-  line-height: 2.05;
-  text-align: justify;
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  line-height: 1.9;
 }
 
+.story.large .story-body {
+  font-size: 1.45rem;
+}
+
+.story-body p {
+  margin: 0 0 14px;
+}
+
+.story-body .lead {
+  font-weight: 700;
+}
+
+/* Words from the day's root look like the links inside a news story. */
 .news mark {
-  background: linear-gradient(transparent 55%, var(--marker) 55%);
-  color: inherit;
-  padding: 0 1px;
+  background: none;
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
 }
 
-.story-body.context {
-  font-size: 1.3rem;
+.story-body.context p {
   color: var(--ink-soft);
+  font-size: 1.05rem;
+  margin-bottom: 8px;
 }
 
 .story-body.context .current {
   color: var(--ink);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  border-inline-start: 3px solid var(--site);
+  padding-inline-start: 10px;
 }
 
-.glossary {
-  border-top: 2px solid var(--rule);
-  padding-top: 6px;
+.story-credit {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
 }
 
-.glossary h4 {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
+.story-credit a {
+  color: var(--link);
+}
+
+.glossary h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  border-inline-start: 4px solid var(--site);
+  padding-inline-start: 8px;
 }
 
 .glossary ul {
@@ -787,29 +828,35 @@ button.path.open {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-  font-size: 0.9rem;
+  gap: 8px;
+}
+
+.glossary li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
 }
 
 .glossary .ar {
-  font-family: var(--font-press);
-  font-size: 1.2rem;
-}
-
-.glossary li span:last-child {
-  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  color: var(--ink);
 }
 
 .news-source {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--ink-soft);
   margin: 0;
-  border-top: 1px solid var(--hair);
-  padding-top: 8px;
 }
 
 .news-source a {
-  color: var(--press);
+  color: var(--link);
 }
 
 /* The button stays in reach at the bottom of the page. */
@@ -818,7 +865,7 @@ button.path.open {
   bottom: 0;
   margin-top: auto;
   padding: 10px 0 2px;
-  background: linear-gradient(transparent, var(--paper) 30%);
+  background: linear-gradient(transparent, var(--page) 30%);
 }
 
 .check .news-action {
@@ -827,9 +874,9 @@ button.path.open {
 }
 
 .news .primary {
-  background: var(--ink);
-  color: var(--paper);
-  border-radius: 4px;
+  background: var(--site);
+  color: #fff;
+  border-radius: 6px;
   margin-top: 0;
 }
 
@@ -837,9 +884,9 @@ button.path.open {
   font: inherit;
   font-size: 1.1rem;
   color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 2px;
+  background: var(--page);
+  border: 1px solid var(--ink-soft);
+  border-radius: 6px;
   padding: 10px 12px;
   resize: vertical;
 }
@@ -885,8 +932,9 @@ button.path.open {
 
 .model {
   margin: 0;
-  border-inline-start: 3px solid var(--press);
-  padding: 4px 12px;
+  background: var(--tint);
+  border-inline-start: 3px solid var(--site);
+  padding: 8px 12px;
   line-height: 1.5;
 }
 
@@ -897,7 +945,6 @@ button.path.open {
 }
 
 .news-total strong {
-  font-family: var(--font-press);
   font-size: 3.4rem;
 }
 
@@ -910,7 +957,7 @@ button.path.open {
 }
 
 .summary li {
-  border-bottom: 1px solid var(--hair);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 8px;
 }
 
@@ -920,8 +967,8 @@ button.path.open {
 }
 
 .summary .ar {
-  font-family: var(--font-press);
-  font-size: 1.25rem;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
 }
 
 /* Only in test mode (?test). */

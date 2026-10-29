@@ -2,9 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource/noto-naskh-arabic/arabic-400.css'
 import '@fontsource/noto-naskh-arabic/arabic-700.css'
-// Newspaper faces for the written path.
-import '@fontsource/amiri/arabic-400.css'
-import '@fontsource/amiri/arabic-700.css'
+// News-site faces for the written path.
+import '@fontsource/noto-kufi-arabic/arabic-800.css'
+import '@fontsource/noto-sans-arabic/arabic-400.css'
+import '@fontsource/noto-sans-arabic/arabic-700.css'
 import '@fontsource/reem-kufi/arabic-700.css'
 import '@fontsource/rubik/hebrew-400.css'
 import '@fontsource/rubik/latin-400.css'
