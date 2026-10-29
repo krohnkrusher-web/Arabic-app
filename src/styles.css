@@ -1175,6 +1175,22 @@ button.path.open {
   color: var(--muted);
 }
 
+.scene-feedback.miss {
+  color: #a3321f;
+  background: #fbe4dc;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 700;
+  animation: shake 400ms ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  .scene-feedback.miss {
+    color: #ffb8a3;
+    background: #4a2419;
+  }
+}
+
 .scene-feedback.ok {
   color: var(--correct);
   font-weight: 700;

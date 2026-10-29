@@ -39,6 +39,8 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [speaking, setSpeaking] = useState(false)
   const [showMeaning, setShowMeaning] = useState(false)
+  const [aside, setAside] = useState<SceneLine | null>(null)
+  const [missFlash, setMissFlash] = useState(0)
   const stopRef = useRef<(() => void) | null>(null)
 
   const closing = turnIndex >= scene.turns.length
@@ -70,6 +72,7 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
     if (!turn) return
     stopRef.current?.()
     setSpeaking(false)
+    setAside(null)
     setFeedback(null)
     setPhase('listening')
     const { result, stop } = listenOnce()
@@ -93,16 +96,29 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
     const nextMisses = misses + 1
     setMisses(nextMisses)
     setPhase('your-turn')
+    setMissFlash((n) => n + 1)
     if (!res.ok && res.reason === 'denied') {
       setFeedback('צריך לאשר למיקרופון גישה כדי לענות.')
       return
     }
     const heard = res.ok ? res.heard[0] : ''
-    setFeedback(heard ? `שמעתי «${heard}». נסה שוב.` : 'לא שמעתי כלום. נסה שוב.')
-    if (nextMisses >= 2 && model) {
-      setFeedback((f) => `${f} הקשב ותגיד אחריו:`)
+    const showAnswer = () => {
+      if (nextMisses < 2 || !model) return
+      setFeedback((f) => `${f} הנה תשובה אפשרית, תגיד אותה.`)
       play(model)
     }
+    if (!heard) {
+      setFeedback('✗ לא שמעתי כלום. נסה שוב.')
+      showAnswer()
+      return
+    }
+    // He heard something that doesn't fit, and says so.
+    setFeedback(`✗ שמעתי «${heard}». זו לא תשובה מתאימה. נסה שוב.`)
+    setAside(scene.confused)
+    play(scene.confused, () => {
+      setAside(null)
+      showAnswer()
+    })
   }
 
   const restart = () => {
@@ -144,13 +160,13 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
             >
               <span className="bubble-name">{scene.character.name}</span>
               <span className="ar bubble-ar">
-                <Marked text={stripVowels(line.ar)} />
+                <Marked text={stripVowels((aside ?? line).ar)} />
               </span>
               {misses > 0 && !showMeaning && <span className="bubble-hint">לחיצה לתרגום</span>}
               {showMeaning && (
                 <span className="bubble-help">
-                  <span>{line.translit}</span>
-                  <span className="muted">{line.he}</span>
+                  <span>{(aside ?? line).translit}</span>
+                  <span className="muted">{(aside ?? line).he}</span>
                 </span>
               )}
             </button>
@@ -188,6 +204,12 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
         {(phase === 'your-turn' || phase === 'listening' || phase === 'right' || phase === 'talking') && turn && (
           <div className="scene-panel">
             <p className="intent">{turn.intent}</p>
+
+            {feedback && (
+              <p key={missFlash} className={`scene-feedback ${phase === 'right' ? 'ok' : 'miss'}`}>
+                {feedback}
+              </p>
+            )}
             {showModel && (
               <p className="model-answer">
                 <span className="ar">
@@ -197,12 +219,10 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
               </p>
             )}
 
-            {feedback && <p className={`scene-feedback${phase === 'right' ? ' ok' : ''}`}>{feedback}</p>}
-
             <button
               className={`mic${phase === 'listening' ? ' on' : ''}`}
               onClick={listen}
-              disabled={phase !== 'your-turn'}
+              disabled={phase !== 'your-turn' || speaking}
               aria-label="לדבר"
             >
               🎤

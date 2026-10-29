@@ -48,9 +48,10 @@ export interface SceneTurn {
   say: SceneLine
   // The character's line when it reacts to the previous answer, keyed by that answer's id.
   sayAfter?: Record<string, SceneLine>
-  // What to say, in Hebrew. The Arabic answers are never shown up front.
+  // What to say, in Hebrew, as a short goal. The Arabic answers are never shown up front.
   intent: string
-  // Every accepted answer. The first one is the model answer shown and played after two misses.
+  // Accepted answers: anything sensible. A reply matches when all its words were heard,
+  // so short ones ("قهوة") act as keywords. The first is the model answer shown after two misses.
   replies: SceneReply[]
 }
 
@@ -59,6 +60,8 @@ export interface Scene {
   character: { name: string; ar: string; look: 'abu-sami' }
   setting: 'kiosk'
   turns: SceneTurn[]
+  // What the character says when the answer doesn't fit.
+  confused: SceneLine
   closing: SceneLine
 }
 
