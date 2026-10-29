@@ -1333,3 +1333,33 @@ button.path.open {
   font-size: 0.75rem;
   color: var(--accent-ink);
 }
+
+.mic {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.mic.on.voice {
+  animation: pulse 400ms ease-in-out infinite;
+  box-shadow: 0 0 0 10px rgb(181 82 46 / 0.35);
+}
+
+.live {
+  text-align: center;
+  margin: 0;
+  min-height: 2.2em;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+}
+
+.live .ar {
+  font-size: 1.25rem;
+}
+
+.live.empty {
+  color: var(--muted);
+}

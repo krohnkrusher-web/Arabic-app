@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { stripVowels, type Scene, type SceneLine, type SceneReply } from '../content'
-import { canListen, listenOnce, matchReply } from '../speech'
+import { canListen, matchReply, startListening, type Listening } from '../speech'
 import { playLine, useArabicVoice } from '../voice'
 import { AbuSami, Kiosk } from './SceneArt'
 
@@ -42,10 +42,15 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
   const [aside, setAside] = useState<SceneLine | null>(null)
   const [missFlash, setMissFlash] = useState(0)
   const stopRef = useRef<(() => void) | null>(null)
+  const listeningRef = useRef<Listening | null>(null)
+  const pressedAt = useRef(0)
+  const [live, setLive] = useState('')
+  const [voiceOn, setVoiceOn] = useState(false)
 
   const closing = turnIndex >= scene.turns.length
   const turn = closing ? null : scene.turns[turnIndex]
-  const line: SceneLine = turn ? ((choice ? turn.sayAfter?.[choice] : undefined) ?? turn.say) : scene.closing
+  const reaction = (after?: Record<string, SceneLine>) => (choice ? after?.[choice] : undefined)
+  const line: SceneLine = turn ? (reaction(turn.sayAfter) ?? turn.say) : (reaction(scene.closingAfter) ?? scene.closing)
   const model = turn?.replies[0]
 
   const play = (l: SceneLine, onEnd?: () => void) => {
@@ -74,10 +79,14 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
     setSpeaking(false)
     setAside(null)
     setFeedback(null)
+    setLive('')
     setPhase('listening')
-    const { result, stop } = listenOnce()
-    stopRef.current = stop
-    const res = await result
+    const listening = startListening({ onHeard: setLive, onVoice: setVoiceOn })
+    listeningRef.current = listening
+    stopRef.current = listening.abort
+    const res = await listening.result
+    listeningRef.current = null
+    setVoiceOn(false)
     const reply = res.ok ? matchReply(turn.replies, res.heard) : null
     if (reply) {
       setSaid((s) => [...s, reply])
@@ -119,6 +128,22 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
       setAside(null)
       showAnswer()
     })
+  }
+
+  // Hold the mic while speaking and let go to send, or tap once and it stops when you go quiet
+  // (tap again to stop sooner).
+  const micDown = () => {
+    if (listeningRef.current) {
+      listeningRef.current.finish()
+      return
+    }
+    if (phase !== 'your-turn' || speaking) return
+    pressedAt.current = Date.now()
+    void listen()
+  }
+
+  const micUp = () => {
+    if (listeningRef.current && Date.now() - pressedAt.current > 500) listeningRef.current.finish()
   }
 
   const restart = () => {
@@ -179,8 +204,8 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
             {listening ? (
               <>
                 <p className="muted">
-                  {scene.character.name} ידבר איתך בערבית מדוברת. בכל תור כתוב בעברית מה להגיד, ואתה אומר את זה בערבית,
-                  בקול. יש כמה דרכים נכונות להגיד כל דבר.
+                  {scene.character.name} ידבר איתך בערבית מדוברת. בכל תור כתוב בעברית מה להגיד, ואתה עונה בערבית, בקול,
+                  איך שבא לך. לוחצים על המיקרופון ומדברים, או מחזיקים אותו לחוץ תוך כדי דיבור.
                 </p>
                 <button className="primary" onClick={() => setPhase('talking')}>
                   להתחיל
@@ -219,14 +244,23 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
               </p>
             )}
 
+            {phase === 'listening' && (
+              <p className={`live${live ? '' : ' empty'}`}>
+                {live ? <span className="ar">{live}</span> : voiceOn ? 'שומע אותך...' : 'מקשיב. דבר עכשיו.'}
+              </p>
+            )}
+
             <button
-              className={`mic${phase === 'listening' ? ' on' : ''}`}
-              onClick={listen}
-              disabled={phase !== 'your-turn' || speaking}
+              className={`mic${phase === 'listening' ? ' on' : ''}${voiceOn ? ' voice' : ''}`}
+              onPointerDown={micDown}
+              onPointerUp={micUp}
+              onPointerCancel={micUp}
+              onContextMenu={(e) => e.preventDefault()}
+              disabled={(phase !== 'your-turn' && phase !== 'listening') || speaking}
               aria-label="לדבר"
             >
               🎤
-              <span>{phase === 'listening' ? 'מקשיב...' : phase === 'talking' ? '' : 'לחץ ודבר'}</span>
+              <span>{phase === 'listening' ? 'סיימתי' : phase === 'your-turn' && !speaking ? 'לחץ ודבר' : ''}</span>
             </button>
           </div>
         )}

@@ -34,3 +34,24 @@ describe('matchReply', () => {
     expect(matchReply(tasty, ['كتير زاكي'])?.ar).toBe('كْتير زاكي')
   })
 })
+
+describe('matchReply with keyword lists', () => {
+  const taste = [
+    { ...r('كْتير زاكي', 'good'), any: ['زاكي', 'طيب', 'منيح'] },
+    { ...r('مِش زاكي', 'bad'), any: ['مش طيب', 'مش منيح', 'مر'] },
+  ]
+
+  it('accepts any listed way to say it', () => {
+    expect(matchReply(taste, ['والله طيب كتير'])?.id).toBe('good')
+  })
+
+  it('lets a negation beat the plain word', () => {
+    expect(matchReply(taste, ['لا مش منيح'])?.id).toBe('bad')
+  })
+
+  it('reads through prefixes like and/with/the', () => {
+    const drinks = [{ ...r('بشرب قهوة', 'coffee'), any: ['قهوة'] }]
+    expect(matchReply(drinks, ['والقهوة لو سمحت'])?.id).toBe('coffee')
+    expect(matchReply(drinks, ['بالقهوه'])?.id).toBe('coffee')
+  })
+})

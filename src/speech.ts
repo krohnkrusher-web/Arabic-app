@@ -1,15 +1,22 @@
 import type { SceneReply } from './content'
 
 // Speech recognition is not in TypeScript's DOM types yet; this is the part we use.
+interface RecognitionResult extends ArrayLike<{ transcript: string }> {
+  isFinal: boolean
+}
+
 interface Recognition {
   lang: string
   maxAlternatives: number
   interimResults: boolean
   continuous: boolean
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
+  onresult: ((e: { results: ArrayLike<RecognitionResult> }) => void) | null
   onerror: ((e: { error: string }) => void) | null
+  onspeechstart: (() => void) | null
+  onspeechend: (() => void) | null
   onend: (() => void) | null
   start(): void
+  stop(): void
   abort(): void
 }
 
@@ -25,12 +32,42 @@ export const canListen = () => recognitionCtor() !== null
 // Palestinian Arabic first; some phones only know other Arabic dialects, so fall back to Jordanian.
 const LANGS = ['ar-PS', 'ar-JO']
 
+// Stop on our own once the learner has said something and then gone quiet, or after a long time.
+const QUIET_MS = 1600
+const MAX_MS = 12000
+
 export type ListenResult = { ok: true; heard: string[] } | { ok: false; reason: 'no-speech' | 'denied' | 'error' }
 
-// Listens for one utterance and resolves with everything the recognizer thought it heard.
-export function listenOnce(): { result: Promise<ListenResult>; stop: () => void } {
+export interface ListenEvents {
+  // What the recognizer thinks it hears so far, updated live.
+  onHeard?: (text: string) => void
+  // True while the phone detects a voice.
+  onVoice?: (voice: boolean) => void
+}
+
+export interface Listening {
+  result: Promise<ListenResult>
+  // Stop listening and check what was heard (letting go of the button).
+  finish: () => void
+  // Stop and throw it away (closing the scene).
+  abort: () => void
+}
+
+// Listens until finish(), or until the learner goes quiet after speaking.
+// Resolves with everything the recognizer thought it heard: the whole utterance first, then each alternative.
+export function startListening(events: ListenEvents = {}): Listening {
   const Ctor = recognitionCtor()
   let current: Recognition | null = null
+  let finished = false
+  let aborted = false
+  const finish = () => {
+    finished = true
+    current?.stop()
+  }
+  const abort = () => {
+    aborted = true
+    current?.abort()
+  }
   const result = new Promise<ListenResult>((resolve) => {
     if (!Ctor) return resolve({ ok: false, reason: 'error' })
     const attempt = (langIndex: number) => {
@@ -38,36 +75,55 @@ export function listenOnce(): { result: Promise<ListenResult>; stop: () => void 
       current = r
       r.lang = LANGS[langIndex]
       r.maxAlternatives = 5
-      r.interimResults = false
-      r.continuous = false
+      r.interimResults = true
+      r.continuous = true
       let settled = false
+      let best = ''
+      const alternatives: string[] = []
+      let quietTimer: ReturnType<typeof setTimeout> | undefined
+      const maxTimer = setTimeout(() => r.stop(), MAX_MS)
       const done = (res: ListenResult) => {
         if (settled) return
         settled = true
+        clearTimeout(quietTimer)
+        clearTimeout(maxTimer)
+        events.onVoice?.(false)
         resolve(res)
       }
       r.onresult = (e) => {
-        const heard: string[] = []
+        const parts: string[] = []
+        alternatives.length = 0
         for (let i = 0; i < e.results.length; i++) {
           const alts = e.results[i]
-          for (let j = 0; j < alts.length; j++) heard.push(alts[j].transcript)
+          if (alts.length) parts.push(alts[0].transcript)
+          for (let j = 0; j < alts.length; j++) alternatives.push(alts[j].transcript)
         }
-        done({ ok: true, heard })
+        best = parts.join(' ').trim()
+        events.onHeard?.(best)
+        clearTimeout(quietTimer)
+        quietTimer = setTimeout(() => r.stop(), QUIET_MS)
       }
+      r.onspeechstart = () => events.onVoice?.(true)
+      r.onspeechend = () => events.onVoice?.(false)
       r.onerror = (e) => {
-        if (e.error === 'language-not-supported' && langIndex + 1 < LANGS.length) {
+        if (e.error === 'language-not-supported' && langIndex + 1 < LANGS.length && !finished) {
           settled = true
+          clearTimeout(maxTimer)
           attempt(langIndex + 1)
         } else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') done({ ok: false, reason: 'denied' })
         else if (e.error === 'no-speech' || e.error === 'aborted') done({ ok: false, reason: 'no-speech' })
-        else done({ ok: false, reason: 'error' })
+        else if (!best) done({ ok: false, reason: 'error' })
       }
-      r.onend = () => done({ ok: false, reason: 'no-speech' })
+      r.onend = () => {
+        if (aborted || !best) done({ ok: false, reason: 'no-speech' })
+        else done({ ok: true, heard: [best, ...alternatives] })
+      }
       r.start()
+      if (finished) r.stop()
     }
     attempt(0)
   })
-  return { result, stop: () => current?.abort() }
+  return { result, finish, abort }
 }
 
 const HARAKAT = /[ً-ْٰـ]/g
@@ -101,20 +157,51 @@ function distance(a: string, b: string): number {
   return row[b.length]
 }
 
-// A word counts as said if it is in the transcript, or one letter off for words of four letters or more.
-function wordHeard(word: string, heard: string[]): boolean {
-  return heard.some((h) => h === word || (word.length >= 4 && distance(h, word) <= 1))
+// A heard word may carry "and", "with", "the" in front of it: والقهوة is still قهوة.
+const PREFIXES = ['وال', 'بال', 'فال', 'لل', 'ال', 'و', 'ب', 'ف', 'ل']
+
+function forms(word: string): string[] {
+  const out = [word]
+  for (const p of PREFIXES) if (word.startsWith(p) && word.length - p.length >= 2) out.push(word.slice(p.length))
+  return out
 }
 
-// The reply is matched when every word of it was heard, in any order, with anything else around it.
+// Short words must be exact; longer ones may be one letter off, and long ones two.
+function close(heard: string, word: string): boolean {
+  if (heard === word) return true
+  if (word.length < 4) return false
+  return distance(heard, word) <= (word.length >= 7 ? 2 : 1)
+}
+
+function wordHeard(word: string, heard: string[]): boolean {
+  return heard.some((h) => forms(h).some((f) => close(f, word)))
+}
+
+// A keyword counts when each of its words was heard, in any order, with anything else around it.
+function keywordHeard(keyword: string, heard: string[]): boolean {
+  const words = normalizeArabic(keyword).split(' ').filter(Boolean)
+  return words.length > 0 && words.every((w) => wordHeard(w, heard))
+}
+
+export const keywordsOf = (r: SceneReply) => [r.ar, ...(r.any ?? [])]
+
+// Finds the reply the learner gave. When several fit, the one with the longest matching keyword wins,
+// so "مش زاكي" (not tasty) beats "زاكي" (tasty).
 export function matchReply(replies: SceneReply[], transcripts: string[]): SceneReply | null {
   for (const t of transcripts) {
     const heard = normalizeArabic(t).split(' ')
-    // Prefer the longest reply that fits, so "كتير زاكي" wins over "زاكي".
-    const fits = replies
-      .filter((r) => normalizeArabic(r.ar).split(' ').every((w) => wordHeard(w, heard)))
-      .sort((a, b) => normalizeArabic(b.ar).length - normalizeArabic(a.ar).length)
-    if (fits.length) return fits[0]
+    let best: SceneReply | null = null
+    let bestLength = 0
+    for (const r of replies) {
+      for (const k of keywordsOf(r)) {
+        const length = normalizeArabic(k).length
+        if (length > bestLength && keywordHeard(k, heard)) {
+          best = r
+          bestLength = length
+        }
+      }
+    }
+    if (best) return best
   }
   return null
 }
