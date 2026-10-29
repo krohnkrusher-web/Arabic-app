@@ -5,6 +5,7 @@ import { loadNews, type Stats } from '../storage'
 import { newsScore } from '../translate'
 import { speak, useArabicVoice } from '../voice'
 import { NewsPath } from './NewsPath'
+import { ScenePath } from './ScenePath'
 
 const REGISTER_LABEL: Record<Register, string> = {
   msa: 'ספרותית',
@@ -50,6 +51,7 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
   const voice = useArabicVoice()
   const [shared, setShared] = useState(false)
   const [newsOpen, setNewsOpen] = useState(false)
+  const [sceneOpen, setSceneOpen] = useState(false)
   const [newsResult, setNewsResult] = useState(() =>
     day.news && saveNewsProgress ? newsScore(day.news, loadNews(dayNumber)) : null,
   )
@@ -139,10 +141,17 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
       </button>
 
       <div className="paths">
-        <div className="path soon">
-          <strong>מסלול מדובר</strong>
-          <span>סצנה עם דמות שמדברת איתך. בקרוב.</span>
-        </div>
+        {day.scene ? (
+          <button className="path open" onClick={() => setSceneOpen(true)}>
+            <strong>מסלול מדובר</strong>
+            <span>{day.scene.character.name} מדבר איתך בערבית מדוברת. עונים בקול.</span>
+          </button>
+        ) : (
+          <div className="path soon">
+            <strong>מסלול מדובר</strong>
+            <span>סצנה עם דמות שמדברת איתך. בקרוב.</span>
+          </div>
+        )}
         {day.news ? (
           <button className="path open" onClick={() => setNewsOpen(true)}>
             <strong>מסלול כתוב</strong>
@@ -155,6 +164,21 @@ export function Reveal({ day, dayNumber, guesses, won, streak, stats, showVowels
           </div>
         )}
       </div>
+
+      {sceneOpen && day.scene && (
+        <ScenePath
+          scene={day.scene}
+          onClose={() => setSceneOpen(false)}
+          onWritten={
+            day.news
+              ? () => {
+                  setSceneOpen(false)
+                  setNewsOpen(true)
+                }
+              : undefined
+          }
+        />
+      )}
 
       {newsOpen && day.news && (
         <NewsPath
