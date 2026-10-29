@@ -23,6 +23,8 @@ export interface NewsSentence {
 // The written path: a short news paragraph rewritten in simple MSA from a real article, which it links to.
 export interface News {
   source: { name: string; url: string; date: string }
+  // The newspaper section the story runs in, in Arabic, e.g. ثقافة.
+  section?: string
   title: string
   sentences: NewsSentence[]
   glossary?: { ar: string; he: string }[]

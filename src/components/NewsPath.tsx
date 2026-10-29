@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { stripVowels, type News } from '../content'
 import { loadNews, saveNews } from '../storage'
 import { newsScore, scoreSentence, totalScore } from '../translate'
@@ -12,6 +12,24 @@ interface Props {
 }
 
 const plain = (text: string) => text.replace(/\*/g, '')
+
+// The made-up news site the written path is published on.
+const OUTLET = { name: 'الضاد' }
+
+// Words per minute for the "reading time" line.
+const READING_SPEED = 120
+
+const SECTIONS = ['الرئيسية', 'محليات', 'العالم', 'اقتصاد', 'علوم', 'صحة', 'ثقافة', 'رياضة', 'منوعات']
+const WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+// Month names as the Levantine press writes them.
+const MONTHS = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول']
+
+// "8.10.2026" -> "الخميس 8 تشرين الأول 2026"
+export function arabicDate(date: string) {
+  const [d, m, y] = date.split('.').map(Number)
+  if (!d || !m || !y) return date
+  return `${WEEKDAYS[new Date(y, m - 1, d).getDay()]} ${d} ${MONTHS[m - 1]} ${y}`
+}
 
 // News text is shown as a newspaper prints it, without vowel marks.
 // Words from the day's root are wrapped in *stars* in the content; show them highlighted.
@@ -33,7 +51,14 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
   const [stage, setStage] = useState<'read' | 'translate' | 'summary'>(() =>
     done ? 'summary' : progress.checked > 0 || progress.answers.length > 0 ? 'translate' : 'read',
   )
+  const [large, setLarge] = useState(false)
+  const activeTab = useRef<HTMLSpanElement>(null)
   const [index, setIndex] = useState(() => Math.min(progress.checked, total - 1))
+
+  // Bring today's section into view in the tab strip, like a site does on a section page.
+  useEffect(() => {
+    activeTab.current?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [])
 
   useEffect(() => {
     if (save) saveNews(progress)
@@ -61,67 +86,118 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
 
   const close = () => onClose(newsScore(news, progress))
 
+  const sections = news.section && !SECTIONS.includes(news.section) ? [...SECTIONS, news.section] : SECTIONS
+  const words = news.sentences.map((s) => s.ar).join(' ').split(/\s+/).length
+  const minutes = Math.max(1, Math.round(words / READING_SPEED))
+
   const source = (
     <p className="news-source">
-      על פי{' '}
+      הידיעה נכתבה מחדש על פי{' '}
       <a href={news.source.url} target="_blank" rel="noreferrer">
         {news.source.name}
       </a>
-      , {news.source.date}. בניסוח מחודש, בלי ניקוד, כמו בעיתון.
+      , {news.source.date}, בלי ניקוד, כמו באתר חדשות.
     </p>
   )
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label={`מסלול כתוב: ${OUTLET.name}`}>
       <div className="sheet news">
-        <div className="news-top">
-          <h2>מסלול כתוב</h2>
-          <button className="icon-btn" onClick={close} aria-label="סגירה">
-            ✕
-          </button>
-        </div>
+        <header className="site-head">
+          <div className="site-bar">
+            <span className="ar site-logo">{OUTLET.name}</span>
+            <button className="site-close" onClick={close} aria-label="סגירה">
+              ✕
+            </button>
+          </div>
+          <nav className="ar site-tabs" aria-hidden="true">
+            {sections.map((s) => (
+              <span key={s} ref={s === news.section ? activeTab : undefined} className={s === news.section ? 'on' : undefined}>
+                {s}
+              </span>
+            ))}
+          </nav>
+        </header>
 
         {stage === 'read' && (
-          <>
-            <h3 className="ar news-title">
-              <Marked text={news.title} />
-            </h3>
-            <p className="ar news-text">
-              {news.sentences.map((s, i) => (
-                <Fragment key={i}>
-                  <Marked text={s.ar}/>{' '}
-                </Fragment>
-              ))}
-            </p>
-            {voice && (
-              <button className="chip" onClick={() => speak(voice, news.sentences.map((s) => plain(s.ar)).join(' '), 0.8)}>
-                🔊 הקראה
-              </button>
+          <article className={large ? 'story large' : 'story'}>
+            {news.section && (
+              <p className="ar crumbs">
+                الرئيسية <span aria-hidden="true">‹</span> <b>{news.section}</b>
+              </p>
             )}
+            <h1 className="ar headline">
+              <Marked text={news.title} />
+            </h1>
+            <div className="ar meta">
+              <span>
+                <b>{OUTLET.name}</b> - {news.source.name}
+              </span>
+              <span>
+                نُشر: {arabicDate(news.source.date)} · مدة القراءة: {minutes === 1 ? 'دقيقة واحدة' : `${minutes} دقائق`}
+              </span>
+            </div>
+            <div className="tools">
+              {voice && (
+                <button
+                  className="tool"
+                  onClick={() => speak(voice, news.sentences.map((s) => plain(s.ar)).join(' '), 0.8)}
+                  aria-label="הקראה"
+                >
+                  🔊
+                </button>
+              )}
+              <button className="tool ar" onClick={() => setLarge(!large)} aria-label="גודל טקסט" aria-pressed={large}>
+                <small>T</small>T
+              </button>
+            </div>
+            <div className="ar story-body">
+              {news.sentences.map((s, i) => (
+                <p key={i} className={i === 0 ? 'lead' : undefined}>
+                  <Marked text={s.ar} />
+                </p>
+              ))}
+            </div>
+            <p className="ar story-credit">
+              المصدر:{' '}
+              <a href={news.source.url} target="_blank" rel="noreferrer">
+                {news.source.name}
+              </a>
+            </p>
             {news.glossary && news.glossary.length > 0 && (
-              <ul className="glossary">
-                {news.glossary.map((g, i) => (
-                  <li key={i}>
-                    <span className="ar">{stripVowels(g.ar)}</span> <span>{g.he}</span>
-                  </li>
-                ))}
-              </ul>
+              <aside className="glossary">
+                <h2 className="ar">كلمات</h2>
+                <ul>
+                  {news.glossary.map((g, i) => (
+                    <li key={i}>
+                      <span className="ar">{stripVowels(g.ar)}</span>
+                      <span>{g.he}</span>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
             )}
             {source}
-            <button className="primary" onClick={() => setStage('translate')}>
-              לתרגם לעברית
-            </button>
-          </>
+            <div className="news-action">
+              <button className="primary" onClick={() => setStage('translate')}>
+                לתרגם לעברית
+              </button>
+            </div>
+          </article>
         )}
 
         {stage === 'translate' && (
-          <>
-            <p className="muted">
-              משפט {index + 1} מתוך {total}
+          <section className="story">
+            <p className="kicker">
+              תרגום · משפט {index + 1} מתוך {total}
             </p>
-            <p className="ar news-sentence">
-              <Marked text={sentence.ar}/>
-            </p>
+            <div className="ar story-body context">
+              {news.sentences.map((s, i) => (
+                <p key={i} className={i === index ? 'current' : undefined}>
+                  <Marked text={s.ar} />
+                </p>
+              ))}
+            </div>
             <textarea
               className="translation"
               dir="rtl"
@@ -133,9 +209,7 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
             />
             {result ? (
               <div className="check">
-                <p className="check-score">
-                  {Math.round(result.score * 100)}/100
-                </p>
+                <p className="check-score">{Math.round(result.score * 100)}/100</p>
                 <ul className="keys">
                   {sentence.keys.map((k, i) => (
                     <li key={i} className={result.found[i] ? 'hit' : 'miss'}>
@@ -146,20 +220,25 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
                 <p className="model">
                   <strong>תרגום לדוגמה:</strong> {sentence.he}
                 </p>
-                <button className="primary" onClick={next}>
-                  {index + 1 < total ? 'למשפט הבא' : 'לציון'}
-                </button>
+                <div className="news-action">
+                  <button className="primary" onClick={next}>
+                    {index + 1 < total ? 'למשפט הבא' : 'לציון'}
+                  </button>
+                </div>
               </div>
             ) : (
-              <button className="primary" onClick={check} disabled={!answer.trim()}>
-                בדיקה
-              </button>
+              <div className="news-action">
+                <button className="primary" onClick={check} disabled={!answer.trim()}>
+                  בדיקה
+                </button>
+              </div>
             )}
-          </>
+          </section>
         )}
 
         {stage === 'summary' && (
-          <>
+          <section className="story">
+            <p className="kicker">הציון שלך</p>
             <p className="news-total">
               <strong>{totalScore(results)}</strong>/100
             </p>
@@ -167,7 +246,7 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
               {news.sentences.map((s, i) => (
                 <li key={i}>
                   <p className="ar">
-                    <Marked text={s.ar}/>
+                    <Marked text={s.ar} />
                   </p>
                   <p>
                     <span className="muted">התרגום שלך:</span> {progress.answers[i]}
@@ -179,10 +258,12 @@ export function NewsPath({ news, dayNumber, save, onClose }: Props) {
               ))}
             </ol>
             {source}
-            <button className="primary" onClick={close}>
-              סיום
-            </button>
-          </>
+            <div className="news-action">
+              <button className="primary" onClick={close}>
+                סיום
+              </button>
+            </div>
+          </section>
         )}
       </div>
     </div>

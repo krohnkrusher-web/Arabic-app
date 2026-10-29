@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { LETTERS, days, knownRoots, lookupRoot, normalizeLetter, stripVowels } from './content'
 import { scoreSentence } from './translate'
+import { arabicDate } from './components/NewsPath'
 
 const letters = new Set(LETTERS.map((l) => l.ar))
 
@@ -22,6 +23,9 @@ describe('content', () => {
 
   it.each(days.filter((d) => d.news).map((d) => [d.day, d.news!] as const))('day %i news is usable', (_, news) => {
     expect(news.source.url).toMatch(/^https:\/\//)
+    // The date and section print in the newspaper's masthead.
+    expect(news.source.date).toMatch(/^\d{1,2}\.\d{1,2}\.\d{4}$/)
+    expect(news.section).toBeTruthy()
     expect(news.sentences.length).toBeGreaterThanOrEqual(2)
     const text = [news.title, ...news.sentences.map((s) => s.ar), ...(news.glossary ?? []).map((g) => g.ar)]
     // Printed like a newspaper: no vowel marks.
@@ -53,6 +57,12 @@ describe('normalizeLetter', () => {
 
 it('strips vowel marks', () => {
   expect(stripVowels('كِتاب')).toBe('كتاب')
+})
+
+describe('arabicDate', () => {
+  it('writes the masthead date the Levantine way', () => {
+    expect(arabicDate('8.10.2026')).toBe('الخميس 8 تشرين الأول 2026')
+  })
 })
 
 describe('spoken scenes', () => {
