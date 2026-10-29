@@ -68,8 +68,8 @@ export function DesertArt() {
         className="d-dune1"
         d="M0 122C70 100 120 142 200 120S310 94 354 110V214H0z"
       />
-      <Camel x={26} y={112} s={0.75} />
-      <Camel x={54} y={116} s={0.6} />
+      <Camel x={66} y={138} s={0.75} />
+      <Camel x={96} y={142} s={0.6} />
       <path
         className="d-dune2"
         d="M0 154C60 132 150 164 230 144S320 134 354 144V214H0z"
@@ -79,7 +79,7 @@ export function DesertArt() {
         d="M0 184C90 168 170 190 260 176S330 170 354 174V214H0z"
       />
       {/* Tent and fire sit low on the near dune, so a short header can crop the sky without hiding them. */}
-      <g transform="translate(0 24)">
+      <g transform="translate(26 26)">
         <g className="d-tent">
           <path
             className="d-rope"

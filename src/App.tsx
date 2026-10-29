@@ -164,7 +164,7 @@ export default function App() {
           </div>
         </div>
       </header>
-      <Sadu className="sadu" id="sadu-top" />
+      <Sadu className="sadu" id="sadu-top" scale={0.73} />
 
       {testMode && <TestBar dayNumber={dayNumber} />}
 
@@ -191,7 +191,7 @@ export default function App() {
         )}
       </main>
 
-      <Sadu className="sadu sadu-bottom" id="sadu-bottom" scale={0.6} />
+      <Sadu className="sadu sadu-bottom" id="sadu-bottom" scale={0.41} />
 
       {toast && <div className="toast">{toast}</div>}
 
