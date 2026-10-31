@@ -40,10 +40,19 @@ export interface SceneLine {
 }
 
 // One accepted spoken answer. id lets the next line react to what was chosen.
+// One way to say an answer, with its own Hebrew meaning and, optionally, the character's
+// next line reacting to exactly that ("عصير تفاح" gets a line about apple juice).
+export interface SceneKeyword {
+  ar: string
+  he: string
+  next?: SceneLine
+}
+
 // any lists more ways to say it: each counts when all its words were heard, with anything around them.
 export interface SceneReply extends SceneLine {
   id?: string
-  any?: string[]
+  any?: SceneKeyword[]
+  next?: SceneLine
 }
 
 export interface SceneTurn {

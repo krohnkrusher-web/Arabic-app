@@ -1,4 +1,4 @@
-import type { SceneReply } from './content'
+import type { SceneKeyword, SceneReply } from './content'
 
 // Speech recognition is not in TypeScript's DOM types yet; this is the part we use.
 interface RecognitionResult extends ArrayLike<{ transcript: string }> {
@@ -173,31 +173,51 @@ function close(heard: string, word: string): boolean {
   return distance(heard, word) <= (word.length >= 7 ? 2 : 1)
 }
 
-function wordHeard(word: string, heard: string[]): boolean {
-  return heard.some((h) => forms(h).some((f) => close(f, word)))
+// 2 when the word was heard exactly (after prefixes), 1 when it was close, 0 when not at all.
+function wordHeard(word: string, heard: string[]): number {
+  let found = 0
+  for (const h of heard)
+    for (const f of forms(h)) {
+      if (f === word) return 2
+      if (close(f, word)) found = 1
+    }
+  return found
 }
 
 // A keyword counts when each of its words was heard, in any order, with anything else around it.
-function keywordHeard(keyword: string, heard: string[]): boolean {
+// Its score ranks it against the others that fit: more words first, then more exact words, then length.
+function keywordScore(keyword: string, heard: string[]): number {
   const words = normalizeArabic(keyword).split(' ').filter(Boolean)
-  return words.length > 0 && words.every((w) => wordHeard(w, heard))
+  let exact = 0
+  for (const w of words) {
+    const h = wordHeard(w, heard)
+    if (!h) return 0
+    if (h === 2) exact++
+  }
+  return words.length * 10000 + exact * 100 + words.join('').length
 }
 
-export const keywordsOf = (r: SceneReply) => [r.ar, ...(r.any ?? [])]
+export const keywordsOf = (r: SceneReply): SceneKeyword[] => [{ ar: r.ar, he: r.he, next: r.next }, ...(r.any ?? [])]
 
-// Finds the reply the learner gave. When several fit, the one with the longest matching keyword wins,
-// so "مش زاكي" (not tasty) beats "زاكي" (tasty).
-export function matchReply(replies: SceneReply[], transcripts: string[]): SceneReply | null {
+export interface Match {
+  reply: SceneReply
+  // The exact way it was said, for its Hebrew meaning and the reaction to it.
+  keyword: SceneKeyword
+}
+
+// Finds the reply the learner gave. When several fit, the most specific keyword wins:
+// "مش زاكي" (not tasty) beats "زاكي" (tasty), and an exact word beats a near miss.
+export function matchReply(replies: SceneReply[], transcripts: string[]): Match | null {
   for (const t of transcripts) {
     const heard = normalizeArabic(t).split(' ')
-    let best: SceneReply | null = null
-    let bestLength = 0
-    for (const r of replies) {
-      for (const k of keywordsOf(r)) {
-        const length = normalizeArabic(k).length
-        if (length > bestLength && keywordHeard(k, heard)) {
-          best = r
-          bestLength = length
+    let best: Match | null = null
+    let bestScore = 0
+    for (const reply of replies) {
+      for (const keyword of keywordsOf(reply)) {
+        const score = keywordScore(keyword.ar, heard)
+        if (score > bestScore) {
+          best = { reply, keyword }
+          bestScore = score
         }
       }
     }
