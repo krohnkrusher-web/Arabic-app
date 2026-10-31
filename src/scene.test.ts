@@ -33,11 +33,24 @@ const said: [number, string, string | null][] = [
 describe('Day 1 scene understands real answers', () => {
   for (const [turn, text, id] of said) {
     it(`turn ${turn + 1}: ${text}`, () => {
-      expect(matchReply(day1.turns[turn].replies, [text])?.id ?? null).toBe(id)
+      expect(matchReply(day1.turns[turn].replies, [text])?.reply.id ?? null).toBe(id)
     })
   }
 
+  it('shows the Hebrew of what was said, and reacts to it', () => {
+    const apple = matchReply(day1.turns[0].replies, ['بدي عصير تفاح'])!
+    expect(apple.keyword.he).toBe('מיץ תפוחים')
+    expect(apple.keyword.next?.he).toContain('מיץ תפוחים')
+    const bitter = matchReply(day1.turns[2].replies, ['كتير مر'])!
+    expect(bitter.keyword.he).toBe('מר')
+    expect(bitter.keyword.next?.he).toContain('מר')
+  })
+
+  it('gives every accepted answer a Hebrew meaning', () => {
+    day1.turns.forEach((t) => t.replies.forEach((r) => (r.any ?? []).forEach((k) => expect(k.he, k.ar).toBeTruthy())))
+  })
+
   it('accepts its own model answers', () => {
-    day1.turns.forEach((t) => expect(matchReply(t.replies, [t.replies[0].ar])).toBe(t.replies[0]))
+    day1.turns.forEach((t) => expect(matchReply(t.replies, [t.replies[0].ar])?.reply).toBe(t.replies[0]))
   })
 })

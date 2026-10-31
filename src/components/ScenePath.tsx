@@ -32,6 +32,8 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
   const [phase, setPhase] = useState<Phase>('intro')
   const [turnIndex, setTurnIndex] = useState(0)
   const [choice, setChoice] = useState<string | undefined>()
+  // The character's reaction to exactly what was said, when the content has one.
+  const [reactionLine, setReactionLine] = useState<SceneLine | undefined>()
   const [misses, setMisses] = useState(0)
   const [firstTry, setFirstTry] = useState(0)
   const [said, setSaid] = useState<SceneReply[]>([])
@@ -50,7 +52,8 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
   const closing = turnIndex >= scene.turns.length
   const turn = closing ? null : scene.turns[turnIndex]
   const reaction = (after?: Record<string, SceneLine>) => (choice ? after?.[choice] : undefined)
-  const line: SceneLine = turn ? (reaction(turn.sayAfter) ?? turn.say) : (reaction(scene.closingAfter) ?? scene.closing)
+  const line: SceneLine =
+    reactionLine ?? (turn ? (reaction(turn.sayAfter) ?? turn.say) : (reaction(scene.closingAfter) ?? scene.closing))
   const model = turn?.replies[0]
 
   const play = (l: SceneLine, onEnd?: () => void) => {
@@ -87,14 +90,16 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
     const res = await listening.result
     listeningRef.current = null
     setVoiceOn(false)
-    const reply = res.ok ? matchReply(turn.replies, res.heard) : null
-    if (reply) {
+    const match = res.ok ? matchReply(turn.replies, res.heard) : null
+    if (match) {
+      const { reply, keyword } = match
       setSaid((s) => [...s, reply])
       if (misses === 0) setFirstTry((n) => n + 1)
-      setFeedback(`✓ ${reply.he}`)
+      setFeedback(`✓ ${keyword.he}`)
       setPhase('right')
       setTimeout(() => {
         setChoice(reply.id)
+        setReactionLine(keyword.next)
         setMisses(0)
         setFeedback(null)
         setTurnIndex((i) => i + 1)
@@ -149,6 +154,7 @@ export function ScenePath({ scene, onClose, onWritten }: Props) {
   const restart = () => {
     setTurnIndex(0)
     setChoice(undefined)
+    setReactionLine(undefined)
     setMisses(0)
     setFirstTry(0)
     setSaid([])

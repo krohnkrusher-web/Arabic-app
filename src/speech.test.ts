@@ -14,15 +14,15 @@ describe('matchReply', () => {
   const drinks = [r('بَشْرَب قَهْوة', 'coffee'), r('بَشْرَب شاي', 'tea'), r('بَشْرَب لَيْمون', 'lemon')]
 
   it('finds the reply that was said, with extra words around it', () => {
-    expect(matchReply(drinks, ['انا بشرب شاي لو سمحت'])?.id).toBe('tea')
+    expect(matchReply(drinks, ['انا بشرب شاي لو سمحت'])?.reply.id).toBe('tea')
   })
 
   it('forgives one letter in longer words', () => {
-    expect(matchReply(drinks, ['اشرب قهوة'])?.id).toBe('coffee')
+    expect(matchReply(drinks, ['اشرب قهوة'])?.reply.id).toBe('coffee')
   })
 
   it('checks every alternative the recognizer heard', () => {
-    expect(matchReply(drinks, ['بشرب شيء', 'بشرب ليمون'])?.id).toBe('lemon')
+    expect(matchReply(drinks, ['بشرب شيء', 'بشرب ليمون'])?.reply.id).toBe('lemon')
   })
 
   it('rejects an answer that misses a word', () => {
@@ -31,27 +31,27 @@ describe('matchReply', () => {
 
   it('prefers the longest reply that fits', () => {
     const tasty = [r('زاكي'), r('كْتير زاكي')]
-    expect(matchReply(tasty, ['كتير زاكي'])?.ar).toBe('كْتير زاكي')
+    expect(matchReply(tasty, ['كتير زاكي'])?.reply.ar).toBe('كْتير زاكي')
   })
 })
 
 describe('matchReply with keyword lists', () => {
   const taste = [
-    { ...r('كْتير زاكي', 'good'), any: ['زاكي', 'طيب', 'منيح'] },
-    { ...r('مِش زاكي', 'bad'), any: ['مش طيب', 'مش منيح', 'مر'] },
+    { ...r('كْتير زاكي', 'good'), any: ['زاكي', 'طيب', 'منيح'].map((ar) => ({ ar, he: '' })) },
+    { ...r('مِش زاكي', 'bad'), any: ['مش طيب', 'مش منيح', 'مر'].map((ar) => ({ ar, he: '' })) },
   ]
 
   it('accepts any listed way to say it', () => {
-    expect(matchReply(taste, ['والله طيب كتير'])?.id).toBe('good')
+    expect(matchReply(taste, ['والله طيب كتير'])?.reply.id).toBe('good')
   })
 
   it('lets a negation beat the plain word', () => {
-    expect(matchReply(taste, ['لا مش منيح'])?.id).toBe('bad')
+    expect(matchReply(taste, ['لا مش منيح'])?.reply.id).toBe('bad')
   })
 
   it('reads through prefixes like and/with/the', () => {
-    const drinks = [{ ...r('بشرب قهوة', 'coffee'), any: ['قهوة'] }]
-    expect(matchReply(drinks, ['والقهوة لو سمحت'])?.id).toBe('coffee')
-    expect(matchReply(drinks, ['بالقهوه'])?.id).toBe('coffee')
+    const drinks = [{ ...r('بشرب قهوة', 'coffee'), any: [{ ar: 'قهوة', he: 'קפה' }] }]
+    expect(matchReply(drinks, ['والقهوة لو سمحت'])?.reply.id).toBe('coffee')
+    expect(matchReply(drinks, ['بالقهوه'])?.reply.id).toBe('coffee')
   })
 })
